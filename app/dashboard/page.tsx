@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import HeaderCard from "./components/header-card"
-import DataTable from "./components/data-tabel"
+import DataTable from "../residents/components/data-tabel"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function Page() {

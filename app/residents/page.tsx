@@ -11,7 +11,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import DataTable from "../dashboard/components/data-tabel"
+import DataTable from "./components/data-tabel"
 
 const page = () => {
   

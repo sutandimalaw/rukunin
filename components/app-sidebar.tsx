@@ -75,7 +75,7 @@ const data = {
     },
     {
       title: "Data Warga",
-      url: "/residence",
+      url: "/residents",
       icon: BookOpen,
     },
     {
@@ -85,7 +85,7 @@ const data = {
     },
     {
       title: "Pengumuman",
-      url: "announcements",
+      url: "/announcements",
       icon: Settings2,
     },
     {

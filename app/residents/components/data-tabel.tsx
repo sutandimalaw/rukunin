@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -31,9 +30,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import DialogForm from "../create-residence/dialog-form"
+import DialogForm from "../create/dialog-form"
 import { ChevronDown } from "lucide-react"
-import { columns } from "../table/config"
+import { columns } from "./table/config"
 import useGetResidents from "../hooks/useGetResidents"
 
 

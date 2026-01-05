@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { PAYMENT } from "@/app/utils/data-type"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpDown, ArrowRight, ChevronDown, MoreHorizontal, ChevronRight, CirclePlus } from "lucide-react"
+import Link from "next/link"
 
 export const columns: ColumnDef<PAYMENT>[] = [
   {
@@ -103,11 +104,14 @@ export const columns: ColumnDef<PAYMENT>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const payment = row.original
-
       return (
-        <div>
-          <ChevronRight/>
-        </div>
+        <Link
+          href={`/residents/${payment.id}`}
+          className="inline-flex cursor-pointer"
+          aria-label="Lihat detail"
+        >
+          <ChevronRight />
+        </Link>
       )
     },
   },
