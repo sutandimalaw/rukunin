@@ -19,15 +19,15 @@ const page = () => {
             />
             <Breadcrumb>
                 <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                    Data Warga
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                    <BreadcrumbPage>Detail</BreadcrumbPage>
-                </BreadcrumbItem>
+                    <BreadcrumbItem className="hidden md:block">
+                        <BreadcrumbLink href="#">
+                        Data Warga
+                        </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>Detail</BreadcrumbPage>
+                    </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
             </div>

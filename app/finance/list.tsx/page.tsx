@@ -1,17 +1,18 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import {
-  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
-  VisibilityState,
+  type ColumnFiltersState,
+  type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table"
+import { ChevronDown } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -29,30 +30,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { columns } from "./column"
+import { data } from "../constanta/mock-data"
 
-import DialogForm from "../create/dialog-form"
-import { ChevronDown } from "lucide-react"
-import { columns } from "./table/config"
-import useGetResidents from "../hooks/useGetResidents"
-
-
-const DataTable = () => {
-  const { data: residents, isLoading, error } = useGetResidents()
-  // if (isLoading) return <p>Loading...</p>
-  // if (error) return <p>Gagal load residents</p>
-
-  console.log("residents", residents)
-
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] = 
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+ const Page =()=> {
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
-    data: residents ??[],
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -61,57 +48,43 @@ const DataTable = () => {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   })
-  
+
   return (
-    <div className="w-full">
-      <div className="flex justify-between py-4">
-        <Input
-          placeholder="Filter name..."
-          value={(table.getColumn("full_name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("full_name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <div className="flex">
-          <DialogForm />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columns <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-       
+    <div className="m-6">
+      <div className="flex items-center py-4">
         
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto">
+              Columns <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                )
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -134,7 +107,7 @@ const DataTable = () => {
             ))}
           </TableHeader>
           <TableBody>
-            {table?.getRowModel()?.rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -150,7 +123,6 @@ const DataTable = () => {
                   ))}
                 </TableRow>
               ))
-
             ) : (
               <TableRow>
                 <TableCell
@@ -192,4 +164,4 @@ const DataTable = () => {
   )
 }
 
-export default DataTable
+export default Page

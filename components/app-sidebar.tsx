@@ -4,15 +4,13 @@ import * as React from "react"
 import { useAuth } from "@/provider/auth-provider"
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
+  Users,
   Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  CircleDollarSign,
+  Bell,
+  FileTextIcon,
+  House
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -56,7 +54,7 @@ const data = {
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: SquareTerminal,
+      icon: House,
       isActive: true,
       // items: [
       //   {
@@ -76,22 +74,22 @@ const data = {
     {
       title: "Data Warga",
       url: "/residents",
-      icon: BookOpen,
+      icon: Users,
     },
     {
       title: "Keuangan",
-      url: "#",
-      icon: Settings2,
+      url: "/finance",
+      icon: CircleDollarSign,
     },
     {
       title: "Pengumuman",
       url: "/announcements",
-      icon: Settings2,
+      icon: Bell,
     },
     {
       title: "Laporan",
-      url: "#",
-      icon: Settings2,
+      url: "/report",
+      icon: FileTextIcon,
     },
   ],
   // projects: [

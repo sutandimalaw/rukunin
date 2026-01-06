@@ -40,7 +40,6 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider user={user}>
-         
             <SidebarProvider>
               <AppSidebar /> 
                 <Providers>
