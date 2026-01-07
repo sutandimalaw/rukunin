@@ -3,9 +3,7 @@
 import * as React from "react"
 import { useAuth } from "@/provider/auth-provider"
 import {
-  AudioWaveform,
   Users,
-  Command,
   GalleryVerticalEnd,
   CircleDollarSign,
   Bell,
@@ -14,8 +12,6 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
@@ -39,21 +35,11 @@ const data = {
       logo: GalleryVerticalEnd,
       plan: "Web RT",
     },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
   ],
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/",
       icon: House,
       isActive: true,
       // items: [
