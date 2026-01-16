@@ -84,7 +84,7 @@ const DialogForm =  () => {
   return (
     <Dialog open={openModal} onOpenChange={setOpenModal}>  
         <DialogTrigger asChild>
-          <Button onClick={() => setOpenModal(true)} variant="outline">Tambah Warga ini<CirclePlus/> </Button>
+          <Button className='cursor-pointer' onClick={() => setOpenModal(true)} variant="outline">Tambah Warga<CirclePlus/> </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[825px]">
           <form 

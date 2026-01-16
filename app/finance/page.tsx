@@ -8,10 +8,54 @@ import React, { useState } from 'react'
 import List from './list.tsx/page'
 import { Button } from '@/components/ui/button'
 import Modal from './components/modal'
+import { transactionSchema } from './schema'
+import { z } from "zod"
+import { useForm } from "@tanstack/react-form"
+import { createClient } from '@/lib/supabase/client'
 
 const page = () => {
     const [open, setOpen] = useState(false)
+    const [isSubmitting, setIsSubmitting] = React.useState(false)
+    const [submitError, setSubmitError] = React.useState<string | null>(null)
+    const [submitSuccess, setSubmitSuccess] = React.useState(false)
 
+    const defaultValues: z.input<typeof transactionSchema> = {
+        type: "",
+        category: "",
+        amount: 0,
+        desc: ""
+    }
+    const form = useForm({
+        defaultValues,
+        validators: {
+        onChange: transactionSchema,
+        },
+        onSubmit: async ({ value }) => {
+            setIsSubmitting(true)
+            setSubmitError(null)
+            setSubmitSuccess(false)
+            const supabase = await createClient()
+            try {
+                // full-form validation
+                transactionSchema.parse(value)
+                const { error } = await supabase.rpc("add_transaction_v2", {
+                    p_date: new Date().toISOString().slice(0, 10),
+                    p_type: value.type,
+                    p_amount: value.amount,
+                    p_description: value.desc,
+                    p_category: value.category
+                })
+                if (error) throw error
+                setSubmitSuccess(true)
+                form.reset()
+                setOpen?.(false)
+            } catch (err: any) {
+                setSubmitError(err.message || "Terjadi kesalahan")
+            } finally {
+                setIsSubmitting(false)
+            }
+        },
+    })
     return (
         <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -32,7 +76,7 @@ const page = () => {
                 </div>
             </header>
             <div className='mx-6 flex justify-end '>
-                <Button onClick={() =>setOpen(true)}>Tambah Transaksi</Button>
+                <Button className='cursor-pointer' onClick={() =>setOpen(true)}>Tambah Transaksi</Button>
             </div>
         
             <div className='m-6 grid grid-cols-4 gap-5'>
@@ -89,8 +133,14 @@ const page = () => {
                 </Card>
             </div>
             <List />
-            <Modal open={open} setOpen={setOpen} />
-
+            <Modal 
+                form={form}
+                open={open}
+                setOpen={setOpen} 
+                submitError={submitError} 
+                submitSuccess={submitSuccess} 
+                isSubmitting={isSubmitting}
+            />
         </SidebarInset>
     )
 }

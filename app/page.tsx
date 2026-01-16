@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import DataTable from "./residents/components/data-tabel"
 import StatCard from "../components/molecules/stat-card"
+import { Users } from "lucide-react"
 
 export default async function Page() { 
   return ( 
@@ -28,12 +29,12 @@ export default async function Page() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="#">
-                  Building Your Application
+                  Dashboard
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                <BreadcrumbPage>Warga RT 4</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -49,6 +50,7 @@ export default async function Page() {
             title="Total Warga"
             value="142"
             subtitle="35 Kepala Keluarga"
+            // icon={Users}
           />
           <StatCard
             title="Kas RT/RW"
