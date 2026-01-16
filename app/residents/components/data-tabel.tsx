@@ -110,7 +110,6 @@ const DataTable = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-       
         
       </div>
       <div className="overflow-hidden rounded-md border">

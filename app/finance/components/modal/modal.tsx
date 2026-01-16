@@ -10,9 +10,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-import { FormSelect } from "@/components/atoms/form-select"
-import { FormInput } from "@/components/atoms/form-input"
 import { trans_category, transaction_type } from "../../constanta/transactionType"
+import { FormSelect } from "@/components/atoms/FormSelect"
+import { FormInput } from "@/components/atoms/FormInput"
 
 
 interface ModalProps {
@@ -24,14 +24,14 @@ interface ModalProps {
   isSubmitting : boolean
 }
 
-const Modal = ({ 
+function Modal({ 
     form, 
     open, 
     setOpen, 
     submitError, 
     submitSuccess, 
     isSubmitting 
-}: ModalProps) => {
+}: ModalProps)  {
   
   return (
     <Dialog open ={open} onOpenChange={setOpen}>

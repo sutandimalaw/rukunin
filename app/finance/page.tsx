@@ -5,20 +5,20 @@ import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@radix-ui/react-separator'
 import { CircleDollarSign, TrendingDown, TrendingUp, Wallet, WalletCards } from 'lucide-react'
 import React, { useState } from 'react'
-import List from './list.tsx/page'
 import { Button } from '@/components/ui/button'
-import Modal from './components/modal'
 import { transactionSchema } from './schema'
 import { z } from "zod"
 import { useForm } from "@tanstack/react-form"
 import { createClient } from '@/lib/supabase/client'
+import { TableTransaction } from './table-transaction'
+import { Modal } from './components/modal'
+
 
 const page = () => {
     const [open, setOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [submitError, setSubmitError] = React.useState<string | null>(null)
     const [submitSuccess, setSubmitSuccess] = React.useState(false)
-
     const defaultValues: z.input<typeof transactionSchema> = {
         type: "",
         category: "",
@@ -132,8 +132,8 @@ const page = () => {
                     
                 </Card>
             </div>
-            <List />
-            <Modal 
+            <TableTransaction />
+            <Modal
                 form={form}
                 open={open}
                 setOpen={setOpen} 
