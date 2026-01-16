@@ -38,10 +38,6 @@ import useGetResidents from "../hooks/useGetResidents"
 
 const DataTable = () => {
   const { data: residents, isLoading, error } = useGetResidents()
-  // if (isLoading) return <p>Loading...</p>
-  // if (error) return <p>Gagal load residents</p>
-
-  console.log("residents", residents)
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(

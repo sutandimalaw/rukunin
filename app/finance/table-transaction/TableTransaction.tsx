@@ -12,16 +12,18 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table"
 import { columns } from "./column"
-import { data } from "../constanta/mock-data"
 import { DataTable } from "@/components/organisms/data-table"
+import useGetTransaction from "../hooks/useGetTransaction"
 
 const TableTransaction =()=> {
+  const { data: dataTransaction, isLoading, error } = useGetTransaction()
+
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
-    data,
+    data : dataTransaction ??[],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

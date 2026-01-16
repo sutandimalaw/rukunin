@@ -3,11 +3,11 @@ import { useQuery } from '@tanstack/react-query'
 
 const useGetTransaction = () => {
   return useQuery({
-        queryKey: ['transaction'],
+        queryKey: ['transactions'],
         queryFn: async () => {
             const supabase = createClient()
             const { data, error } = await supabase
-                .from('transaction')
+                .from('transactions')
                 .select('*')
 
             if (error) throw error

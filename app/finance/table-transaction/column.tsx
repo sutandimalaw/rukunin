@@ -11,33 +11,27 @@ export const columns: ColumnDef<Transaction>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "date",
+    accessorKey: "created_at",
     header: "Tanggal",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("date")}</div>
+      <div className="capitalize">{row.getValue("created_at")}</div>
     ),
   },
   {
     accessorKey: "category",
-    // header: ({ column }) => {
-    //   return (
-    //     <Button
-    //       variant="ghost"
-    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //     >
-    //       Category
-    //       <ArrowUpDown />
-    //     </Button>
-    //   )
-    // },
     header: "Category",
     cell: ({ row }) => <div className="">{row.getValue("category")}</div>,
   },
   {
-    accessorKey: "desc",
-    header: "Description",
+    accessorKey: "type",
+    header: "In / Out",
+    cell: ({ row }) => <div className="">{row.getValue("type")}</div>,
+  },
+  {
+    accessorKey: "description",
+    header: "Deskripsi",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("desc")}</div>
+      <div className="capitalize">{row.getValue("description")}</div>
     ),
   },
   {
