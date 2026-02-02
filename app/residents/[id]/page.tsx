@@ -5,7 +5,7 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import React from 'react'
-import HistoryPayment from './history-payment'
+import HistoryPayment from './HistoryPayment'
 
 const page = () => {
   return (

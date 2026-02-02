@@ -11,9 +11,8 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import DataTable from "./residents/components/data-tabel"
+import DataTable from "./residents/components/DataTabel"
 import StatCard from "../components/shared/StatCard"
-import { Users } from "lucide-react"
 
 export default async function Page() {
   return ( 
