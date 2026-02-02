@@ -1,1 +1,0 @@
-export { default as TableTransaction } from "./TableTransaction"

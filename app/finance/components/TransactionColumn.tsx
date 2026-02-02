@@ -3,6 +3,8 @@ import {Transaction } from "../interface"
 import { Button } from "@/components/ui/button"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { formatDateTime, formatTime } from "@/lib/date"
+import { capitalizeFirst } from "@/lib/string"
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -14,7 +16,7 @@ export const columns: ColumnDef<Transaction>[] = [
     accessorKey: "created_at",
     header: "Tanggal",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("created_at")}</div>
+      <div className="capitalize">{formatDateTime(row.getValue("created_at"))}</div>
     ),
   },
   {
@@ -25,7 +27,7 @@ export const columns: ColumnDef<Transaction>[] = [
   {
     accessorKey: "type",
     header: "In / Out",
-    cell: ({ row }) => <div className="">{row.getValue("type")}</div>,
+    cell: ({ row }) => <div className="">{capitalizeFirst(row.getValue("type"))}</div>,
   },
   {
     accessorKey: "description",

@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-import { trans_category, transaction_type } from "../../constanta/transactionType"
+import { trans_category, transaction_type } from "../type/transactionType"
 import { FormSelect } from "@/components/atoms/FormSelect"
 import { FormInput } from "@/components/atoms/FormInput"
 

@@ -15,7 +15,7 @@ import DataTable from "./residents/components/data-tabel"
 import StatCard from "../components/molecules/stat-card"
 import { Users } from "lucide-react"
 
-export default async function Page() { 
+export default async function Page() {
   return ( 
     <SidebarInset>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -62,16 +62,16 @@ export default async function Page() {
             value={8}
             subtitle="Menunggu Tindak Lanjut"
           />
-          <StatCard
+          {/* <StatCard
             title="Keamanan"
             value={2}
             subtitle="Petugas Bertugas"
-          />
-          <StatCard
+          /> */}
+          {/* <StatCard
             title="Booking Fasilitas"
             value={5}
             subtitle="Reservasi Hari ini"
-          />
+          /> */}
           <StatCard
             title="Pengumuman"
             value={3}
