@@ -9,9 +9,9 @@ import { z } from "zod"
 import { useForm } from "@tanstack/react-form"
 import useGetTransaction from './hooks/useGetTransaction'
 import TableTransaction from './components/TableTransaction'
-import Modal from './components/Modal'
 import { useCreateTransaction } from './hooks/useCreateTransaction'
 import FinanceSummary from './components/FinanceSummary'
+import CreateTransactionModal from './components/CreateTransactionModal'
 
 const FinancePage = () => {
     const [open, setOpen] = useState(false)
@@ -73,7 +73,7 @@ const FinancePage = () => {
             </div>      
             <FinanceSummary balance={dataTransaction?.balance} />
             <TableTransaction data={dataTransaction?.transactions} isLoading={false} error={null} />
-            <Modal
+            <CreateTransactionModal
                 form={form}
                 open={open}
                 setOpen={setOpen} 

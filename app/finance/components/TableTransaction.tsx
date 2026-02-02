@@ -12,7 +12,7 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table"
 import { columns } from "./TransactionColumn"
-import { DataTable } from "@/components/organisms/data-table"
+import DataTable from "@/components/shared/DataTable"
 
 type ITableProps = {
   data : any[] | undefined

@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import DataTable from "./residents/components/data-tabel"
-import StatCard from "../components/molecules/stat-card"
+import StatCard from "../components/shared/StatCard"
 import { Users } from "lucide-react"
 
 export default async function Page() {

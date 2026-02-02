@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog"
 
 import { trans_category, transaction_type } from "../type/transactionType"
-import { FormSelect } from "@/components/atoms/FormSelect"
-import { FormInput } from "@/components/atoms/FormInput"
+import { FormSelect } from "@/components/shared/FormSelect"
+import { FormInput } from "@/components/shared/FormInput"
 
 
 interface ModalProps {
@@ -24,7 +24,7 @@ interface ModalProps {
   isSubmitting : boolean
 }
 
-function Modal({ 
+function CreateTransactionModal({ 
     form, 
     open, 
     setOpen, 
@@ -97,4 +97,4 @@ function Modal({
   )
 }
 
-export default Modal
+export default CreateTransactionModal
