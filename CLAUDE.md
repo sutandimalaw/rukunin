@@ -6,29 +6,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Rukunin** is a Community Management System (Sistem RT) for neighborhood administration in Indonesia. It handles resident management, financial transactions, and community announcements.
 
+## Monorepo Structure
+
+This is a monorepo using npm workspaces:
+
+```
+rukunin/
+  apps/
+    web/    → Next.js 15 frontend (port 3000)
+    api/    → NestJS backend (port 3001)
+```
+
 ## Commands
 
 ```bash
-# Development server (Turbopack)
-npm run dev
+# Start PostgreSQL (Docker required)
+docker compose up -d
 
-# Production build
-npm run build
+# Frontend dev server (Turbopack)
+npm run dev:web
 
-# Start production server
-npm start
+# Backend dev server (watch mode)
+npm run dev:api
+
+# Production builds
+npm run build:web
+npm run build:api
 
 # Lint
-npm run lint
+npm run lint:web
+npm run lint:api
 ```
 
-There is no test framework configured in this project.
-
-## Architecture
+## Frontend (`apps/web/`)
 
 ### Stack
 - **Next.js 15** (App Router) with TypeScript
-- **Supabase** (PostgreSQL + auth via `@supabase/ssr`)
 - **React Query** (`@tanstack/react-query`) for data fetching
 - **TanStack Form** + **Zod** for forms and validation
 - **TanStack Table** for data tables
@@ -37,33 +50,17 @@ There is no test framework configured in this project.
 ### Directory Layout
 
 ```
-/app                  → Next.js App Router pages (auth, residents, finance, announcements, report, account)
-/components
-  /ui                 → shadcn/ui primitives (Button, Dialog, Input, etc.)
-  /shared             → Business-level shared components (StatCard, DataTable, forms)
-  app-sidebar.tsx     → Main navigation sidebar
-/lib/supabase         → Supabase client factories (server.ts, client.ts, middleware.ts)
-/provider             → AuthProvider context (exposes current user via useAuth())
-/hooks                → Custom React hooks (useAuth, useValidation, use-mobile)
-/utils                → Shared utilities
-middleware.ts         → Route protection: redirects unauthenticated users to /auth/login
+apps/web/
+  app/                  → Next.js App Router pages (auth, residents, finance, announcements, report, account)
+  components/
+    ui/                 → shadcn/ui primitives (Button, Dialog, Input, etc.)
+    shared/             → Business-level shared components (StatCard, DataTable, forms)
+    app-sidebar.tsx     → Main navigation sidebar
+  lib/api/              → API client layer (fetch wrapper for NestJS backend)
+  provider/             → AuthProvider context (exposes current user via useAuth())
+  hooks/                → Custom React hooks (useAuth, useValidation, use-mobile)
+  middleware.ts         → Route protection: validates JWT and redirects unauthenticated users
 ```
-
-### Authentication & Data Flow
-
-1. `middleware.ts` validates Supabase JWT on every request and redirects unauthenticated users.
-2. The root layout (`/app/layout.tsx`) is a server component that fetches the session and passes the user to `AuthProvider`.
-3. Client components access the current user via `useAuth()` from `/provider/auth-provider.tsx`.
-4. Data fetching uses React Query hooks (e.g., `useGetResidents()`, `useGetTransaction()`) that call the Supabase client from `/lib/supabase/client.ts`.
-5. Mutations use Supabase RPC functions for business logic (e.g., `add_transaction_v2`).
-
-### Supabase Client Usage
-
-- **Server components / Route Handlers:** `import { createClient } from "@/lib/supabase/server"`
-- **Client components:** `import { createClient } from "@/lib/supabase/client"`
-- **Middleware:** `import { createClient } from "@/lib/supabase/middleware"` (or use the helper in `middleware.ts`)
-
-> **Note:** There are two parallel Supabase client directories: `/lib/supabase/` and `/utils/supabase/`. Both exist in the repo. Prefer `/lib/supabase/` for new code — it is the canonical location used in newer features.
 
 ### Component Conventions
 
@@ -73,57 +70,82 @@ middleware.ts         → Route protection: redirects unauthenticated users to /
 - Tables use TanStack React Table with column definitions colocated with the feature.
 - Domain types (e.g. `PAYMENT`, `PAYMENT_STATUS`) live in `app/utils/data-type.ts`.
 
-#### DataTable (`/components/shared/DataTable.tsx`)
+#### DataTable (`components/shared/DataTable.tsx`)
 
 Accepts a pre-built TanStack Table instance — not raw data. Callers call `useReactTable()` themselves and pass the resulting `table` object plus `columnsLength`. Built-in pagination controls (Previous/Next).
 
 ```tsx
-// caller pattern
 const table = useReactTable({ data, columns, ... })
 <DataTable table={table} columnsLength={columns.length} />
 ```
 
-Column definitions are colocated with each feature (e.g. `app/residents/components/table/config.tsx`).
-
-#### Modal (`/components/shared/modal/Modal.tsx`)
+#### Modal (`components/shared/modal/Modal.tsx`)
 
 Wrapper around Radix Dialog. Supports controlled open state, optional trigger element, size variants (`sm`, `md`, `lg`), and optional footer slot.
 
-```tsx
-<Modal open={open} onOpenChange={setOpen} title="..." size="lg" trigger={<Button>Open</Button>} footer={<Button>Save</Button>}>
-  {/* content */}
-</Modal>
-```
-
 #### Form Field pattern
 
-Use `Field`, `FieldLabel`, `FieldError` from `/components/ui/field` inside `form.Field` render props. Mark fields invalid only when touched:
-
-```tsx
-<form.Field name="full_name">
-  {(field) => {
-    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-    return (
-      <Field data-invalid={isInvalid}>
-        <FieldLabel htmlFor={field.name}>Nama</FieldLabel>
-        <Input ... />
-        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-      </Field>
-    )
-  }}
-</form.Field>
-```
+Use `Field`, `FieldLabel`, `FieldError` from `components/ui/field` inside `form.Field` render props. Mark fields invalid only when touched.
 
 ### Styling
 
 - Tailwind CSS v4 with CSS variables; use design tokens rather than hardcoded colors.
-- Path alias `@/*` maps to the repo root.
+- Path alias `@/*` maps to `apps/web/`.
 - `components.json` configures shadcn/ui — use the CLI (`npx shadcn@latest add <component>`) to add new UI primitives.
+
+## Backend (`apps/api/`)
+
+### Stack
+- **NestJS 11** with TypeScript
+- **Prisma** ORM with PostgreSQL
+- **Passport.js** + JWT for authentication
+- **class-validator** + **class-transformer** for DTO validation
+- **Swagger** for API documentation (available at `/api/docs`)
+
+### Directory Layout
+
+```
+apps/api/src/
+  main.ts               → Bootstrap (CORS, Swagger, ValidationPipe, global prefix /api/v1)
+  app.module.ts          → Root module importing all feature modules
+  prisma/                → Prisma schema, service, module
+  common/                → Guards, decorators, filters, interceptors
+  auth/                  → JWT auth (login, register, logout, refresh, password reset)
+  residents/             → Resident CRUD
+  finance/               → Transaction CRUD + balance calculation + summary
+  profiles/              → User profile read/update
+  announcements/         → Announcements CRUD
+  reports/               → Financial reports with date filtering
+```
+
+### API Conventions
+
+- All endpoints prefixed with `/api/v1`
+- Protected routes use `@UseGuards(JwtAuthGuard)`
+- Current user extracted via `@CurrentUser()` decorator
+- DTOs validated with `class-validator` decorators
+- Prisma service injected via dependency injection
+
+### Database
+
+- PostgreSQL 16 via Docker Compose
+- Prisma manages schema and migrations
+- Tables: `users`, `profiles`, `residents`, `transactions`, `announcements`
 
 ### Environment
 
-Requires a `.env.local` with Supabase credentials:
+**`apps/api/.env`:**
 ```
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+DATABASE_URL="postgresql://rukunin:rukunin_dev@localhost:5432/rukunin"
+JWT_SECRET=...
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=...
+JWT_REFRESH_EXPIRES_IN=7d
+PORT=3001
+CORS_ORIGIN=http://localhost:3000
+```
+
+**`apps/web/.env.local`:**
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
