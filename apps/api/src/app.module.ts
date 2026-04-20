@@ -7,6 +7,7 @@ import { FinanceModule } from './finance/finance.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { ReportsModule } from './reports/reports.module';
+import { HouseholdsModule } from './households/households.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -20,6 +21,7 @@ import { AppService } from './app.service';
     ProfilesModule,
     AnnouncementsModule,
     ReportsModule,
+    HouseholdsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

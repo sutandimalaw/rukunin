@@ -8,6 +8,22 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export const FAMILY_RELATIONS = [
+  'KEPALA_KELUARGA',
+  'ISTRI',
+  'SUAMI',
+  'ANAK',
+  'ORANG_TUA',
+  'MERTUA',
+  'MENANTU',
+  'CUCU',
+  'ART',
+  'FAMILI_LAIN',
+  'LAINNYA',
+] as const;
+
+export type FamilyRelation = (typeof FAMILY_RELATIONS)[number];
+
 export class CreateResidentDto {
   @ApiProperty({ example: 'Sutandi Azhari' })
   @IsString()
@@ -45,38 +61,13 @@ export class CreateResidentDto {
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional({ example: '3201234567890001' })
-  @IsOptional()
+  @ApiProperty({ example: 'household-uuid' })
   @IsString()
-  kk?: string;
+  @IsNotEmpty()
+  householdId: string;
 
-  @ApiPropertyOptional({ example: 'SA3' })
-  @IsOptional()
+  @ApiProperty({ example: 'ANAK', enum: FAMILY_RELATIONS })
   @IsString()
-  blok?: string;
-
-  @ApiPropertyOptional({ example: '04' })
-  @IsOptional()
-  @IsString()
-  rt?: string;
-
-  @ApiPropertyOptional({ example: '01' })
-  @IsOptional()
-  @IsString()
-  houseNumber?: string;
-
-  @ApiPropertyOptional({ example: 'SB-3' })
-  @IsOptional()
-  @IsString()
-  houseType?: string;
-
-  @ApiPropertyOptional({ example: 'OWNER' })
-  @IsOptional()
-  @IsString()
-  ownershipStatus?: string;
-
-  @ApiPropertyOptional({ example: '2024-01-01' })
-  @IsOptional()
-  @IsDateString()
-  startDateOfOccupancy?: string;
+  @IsNotEmpty()
+  familyRelation: string;
 }

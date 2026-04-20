@@ -11,13 +11,18 @@ export class ResidentsService {
 
   async findAll(query: QueryResidentDto) {
     const { page = 1, limit = 20, search, blok, rt } = query;
+
     const where: Prisma.ResidentWhereInput = {};
 
     if (search) {
       where.fullName = { contains: search, mode: 'insensitive' };
     }
-    if (blok) where.blok = blok;
-    if (rt) where.rt = rt;
+    if (blok) {
+      where.household = { blok };
+    }
+    if (rt) {
+      where.household = { ...((where.household as object) ?? {}), rt };
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.resident.findMany({
@@ -25,6 +30,19 @@ export class ResidentsService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          household: {
+            select: {
+              id: true,
+              kkNumber: true,
+              blok: true,
+              rt: true,
+              houseNumber: true,
+              houseType: true,
+              ownershipStatus: true,
+            },
+          },
+        },
       }),
       this.prisma.resident.count({ where }),
     ]);
@@ -40,8 +58,52 @@ export class ResidentsService {
     };
   }
 
+  async getSummary() {
+    const now = new Date();
+    const fiveYearsAgo = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+    const sixtyYearsAgo = new Date(now.getFullYear() - 60, now.getMonth(), now.getDate());
+
+    const [
+      totalJiwa,
+      totalKK,
+      totalLakiLaki,
+      totalPerempuan,
+      totalBalita,
+      totalLansia,
+    ] = await Promise.all([
+      this.prisma.resident.count(),
+      this.prisma.household.count(),
+      this.prisma.resident.count({
+        where: { gender: { contains: 'laki', mode: 'insensitive' } },
+      }),
+      this.prisma.resident.count({
+        where: { gender: { contains: 'perempuan', mode: 'insensitive' } },
+      }),
+      this.prisma.resident.count({
+        where: { dateOfBirth: { gte: fiveYearsAgo } },
+      }),
+      this.prisma.resident.count({
+        where: { dateOfBirth: { lte: sixtyYearsAgo } },
+      }),
+    ]);
+
+    return {
+      totalJiwa,
+      totalKK,
+      totalLakiLaki,
+      totalPerempuan,
+      totalBalita,
+      totalLansia,
+    };
+  }
+
   async findOne(id: string) {
-    const resident = await this.prisma.resident.findUnique({ where: { id } });
+    const resident = await this.prisma.resident.findUnique({
+      where: { id },
+      include: {
+        household: true,
+      },
+    });
 
     if (!resident) {
       throw new NotFoundException('Warga tidak ditemukan');
@@ -60,33 +122,36 @@ export class ResidentsService {
         maritalStatus: dto.maritalStatus,
         occupation: dto.occupation,
         email: dto.email,
-        kk: dto.kk,
-        blok: dto.blok,
-        rt: dto.rt,
-        houseNumber: dto.houseNumber,
-        houseType: dto.houseType,
-        ownershipStatus: dto.ownershipStatus,
-        startDateOfOccupancy: dto.startDateOfOccupancy
-          ? new Date(dto.startDateOfOccupancy)
-          : null,
+        familyRelation: dto.familyRelation,
+        householdId: dto.householdId,
         createdBy: userId,
       },
+      include: { household: true },
     });
   }
 
   async update(id: string, dto: UpdateResidentDto) {
     await this.findOne(id);
 
-    const data: Prisma.ResidentUpdateInput = { ...dto };
+    const data: Prisma.ResidentUpdateInput = {};
 
-    if (dto.dateOfBirth) {
-      data.dateOfBirth = new Date(dto.dateOfBirth);
+    if (dto.fullName !== undefined) data.fullName = dto.fullName;
+    if (dto.idNumber !== undefined) data.idNumber = dto.idNumber;
+    if (dto.gender !== undefined) data.gender = dto.gender;
+    if (dto.maritalStatus !== undefined) data.maritalStatus = dto.maritalStatus;
+    if (dto.occupation !== undefined) data.occupation = dto.occupation;
+    if (dto.email !== undefined) data.email = dto.email;
+    if (dto.familyRelation !== undefined) data.familyRelation = dto.familyRelation;
+    if (dto.householdId !== undefined) {
+      data.household = { connect: { id: dto.householdId } };
     }
-    if (dto.startDateOfOccupancy) {
-      data.startDateOfOccupancy = new Date(dto.startDateOfOccupancy);
-    }
+    if (dto.dateOfBirth) data.dateOfBirth = new Date(dto.dateOfBirth);
 
-    return this.prisma.resident.update({ where: { id }, data });
+    return this.prisma.resident.update({
+      where: { id },
+      data,
+      include: { household: true },
+    });
   }
 
   async remove(id: string) {

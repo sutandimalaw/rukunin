@@ -58,9 +58,20 @@ const data = {
       // ],
     },
     {
-      title: "Data Warga",
-      url: "/residents",
+      title: "Kependudukan",
+      url: "#",
       icon: Users,
+      isActive: true,
+      items: [
+        {
+          title: "Data Warga",
+          url: "/residents",
+        },
+        {
+          title: "Kartu Keluarga",
+          url: "/kartu-keluarga",
+        },
+      ],
     },
     {
       title: "Keuangan",

@@ -30,8 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import DialogForm from "../create/dialog-form"
-import { ChevronDown } from "lucide-react"
+import Link from "next/link"
+import { ChevronDown, CirclePlus } from "lucide-react"
 import { columns } from "./table/config"
 import useGetResidents from "../hooks/useGetResidents"
 
@@ -78,7 +78,11 @@ const DataTable = () => {
           className="max-w-sm"
         />
         <div className="flex">
-          <DialogForm />
+          <Button variant="outline" className="mr-2" asChild>
+            <Link href="/residents/create">
+              Tambah Warga <CirclePlus className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">

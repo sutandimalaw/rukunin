@@ -29,6 +29,11 @@ export class ResidentsController {
     return this.residentsService.findAll(query);
   }
 
+  @Get('summary')
+  getSummary() {
+    return this.residentsService.getSummary();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.residentsService.findOne(id);

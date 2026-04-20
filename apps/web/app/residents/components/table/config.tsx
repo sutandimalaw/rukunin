@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Resident } from "@/lib/api/residents"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ChevronRight } from "lucide-react"
+import { getFamilyRelationLabel } from "@/lib/api/households"
 import Link from "next/link"
 
 export const columns: ColumnDef<Resident>[] = [
@@ -35,31 +36,39 @@ export const columns: ColumnDef<Resident>[] = [
     ),
   },
   {
-    accessorKey: "blok",
+    id: "blok",
     header: "Blok",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("blok")}</div>
+      <div>{row.original.household?.blok ?? "-"}</div>
     ),
   },
   {
-    accessorKey: "houseNumber",
+    id: "houseNumber",
     header: "No",
     cell: ({ row }) => (
-      <div>{row.getValue("houseNumber")}</div>
+      <div>{row.original.household?.houseNumber ?? "-"}</div>
     ),
   },
   {
-    accessorKey: "rt",
+    id: "rt",
     header: "RT",
     cell: ({ row }) => (
-      <div>{row.getValue("rt")}</div>
+      <div>{row.original.household?.rt ?? "-"}</div>
     ),
   },
   {
     accessorKey: "gender",
     header: "Gender",
+    cell: ({ row }) => {
+      const g = row.getValue<string>("gender")
+      return <div>{g === 'MEN' ? 'L' : g === 'WOMAN' ? 'P' : g}</div>
+    },
+  },
+  {
+    accessorKey: "familyRelation",
+    header: "Relasi",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("gender")}</div>
+      <div className="text-sm">{getFamilyRelationLabel(row.getValue("familyRelation"))}</div>
     ),
   },
   {

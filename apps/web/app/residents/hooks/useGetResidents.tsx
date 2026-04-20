@@ -8,4 +8,11 @@ const useGetResidents = () => {
     })
 }
 
+export const useGetResidentSummary = () => {
+    return useQuery({
+        queryKey: ['residents', 'summary'],
+        queryFn: () => residentsApi.getSummary(),
+    })
+}
+
 export default useGetResidents

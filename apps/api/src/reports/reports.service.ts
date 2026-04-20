@@ -87,20 +87,20 @@ export class ReportsService {
     const [total, byBlok, byOwnership, byGender] = await Promise.all([
       this.prisma.resident.count(),
 
-      this.prisma.resident.groupBy({
+      this.prisma.household.groupBy({
         by: ['blok'],
-        _count: { id: true },
+        _count: { _all: true },
         orderBy: { blok: 'asc' },
       }),
 
-      this.prisma.resident.groupBy({
+      this.prisma.household.groupBy({
         by: ['ownershipStatus'],
-        _count: { id: true },
+        _count: { _all: true },
       }),
 
       this.prisma.resident.groupBy({
         by: ['gender'],
-        _count: { id: true },
+        _count: { _all: true },
       }),
     ]);
 
@@ -108,15 +108,15 @@ export class ReportsService {
       total,
       byBlok: byBlok.map((r) => ({
         blok: r.blok ?? 'Tidak diketahui',
-        count: r._count.id,
+        count: r._count._all,
       })),
       byOwnership: byOwnership.map((r) => ({
         ownershipStatus: r.ownershipStatus ?? 'Tidak diketahui',
-        count: r._count.id,
+        count: r._count._all,
       })),
       byGender: byGender.map((r) => ({
         gender: r.gender,
-        count: r._count.id,
+        count: r._count._all,
       })),
     };
   }

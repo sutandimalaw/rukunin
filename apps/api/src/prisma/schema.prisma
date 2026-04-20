@@ -17,6 +17,7 @@ model User {
   profile      Profile?
   residents    Resident[]
   transactions Transaction[]
+  households   Household[]
 
   @@map("users")
 }
@@ -34,16 +35,9 @@ model Profile {
   @@map("profiles")
 }
 
-model Resident {
+model Household {
   id                   String    @id @default(uuid())
-  fullName             String    @map("full_name")
-  idNumber             String?   @map("id_number")
-  gender               String
-  dateOfBirth          DateTime? @map("date_of_birth")
-  maritalStatus        String?   @map("marital_status")
-  occupation           String?
-  email                String?
-  kk                   String?
+  kkNumber             String    @unique @map("kk_number")
   blok                 String?
   rt                   String?
   houseNumber          String?   @map("house_number")
@@ -54,7 +48,29 @@ model Resident {
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
-  creator User @relation(fields: [createdBy], references: [id])
+  members Resident[]
+  creator User       @relation(fields: [createdBy], references: [id])
+
+  @@map("households")
+}
+
+model Resident {
+  id             String    @id @default(uuid())
+  fullName       String    @map("full_name")
+  idNumber       String?   @map("id_number")
+  gender         String
+  dateOfBirth    DateTime? @map("date_of_birth")
+  maritalStatus  String?   @map("marital_status")
+  occupation     String?
+  email          String?
+  familyRelation String    @default("LAINNYA") @map("family_relation")
+  householdId    String    @map("household_id")
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [id])
 
   @@map("residents")
 }

@@ -1,5 +1,15 @@
 import { apiFetch } from './client';
 
+export interface ResidentHousehold {
+  id: string;
+  kkNumber: string;
+  blok: string | null;
+  rt: string | null;
+  houseNumber: string | null;
+  houseType: string | null;
+  ownershipStatus: string | null;
+}
+
 export interface Resident {
   id: string;
   fullName: string;
@@ -9,13 +19,9 @@ export interface Resident {
   maritalStatus: string | null;
   occupation: string | null;
   email: string | null;
-  kk: string | null;
-  blok: string | null;
-  rt: string | null;
-  houseNumber: string | null;
-  houseType: string | null;
-  ownershipStatus: string | null;
-  startDateOfOccupancy: string | null;
+  familyRelation: string;
+  householdId: string;
+  household: ResidentHousehold;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +32,15 @@ export interface ResidentListResponse {
   meta: { total: number; page: number; limit: number; totalPages: number };
 }
 
+export interface ResidentSummary {
+  totalJiwa: number;
+  totalKK: number;
+  totalLakiLaki: number;
+  totalPerempuan: number;
+  totalBalita: number;
+  totalLansia: number;
+}
+
 export interface CreateResidentData {
   fullName: string;
   idNumber?: string;
@@ -34,13 +49,8 @@ export interface CreateResidentData {
   maritalStatus?: string;
   occupation?: string;
   email?: string;
-  kk?: string;
-  blok?: string;
-  rt?: string;
-  houseNumber?: string;
-  houseType?: string;
-  ownershipStatus?: string;
-  startDateOfOccupancy?: string;
+  householdId: string;
+  familyRelation: string;
 }
 
 export const residentsApi = {
@@ -60,6 +70,8 @@ export const residentsApi = {
     const qs = query.toString();
     return apiFetch<ResidentListResponse>(`/residents${qs ? `?${qs}` : ''}`);
   },
+
+  getSummary: () => apiFetch<ResidentSummary>('/residents/summary'),
 
   getById: (id: string) => apiFetch<Resident>(`/residents/${id}`),
 
