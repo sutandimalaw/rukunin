@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile      Profile?
+  residents    Resident[]
+  transactions Transaction[]
+  households   Household[]
+
+  @@map("users")
+}
+
+model Profile {
+  id        String   @id
+  fullName  String?  @map("full_name")
+  username  String?  @unique
+  website   String?
+  avatarUrl String?  @map("avatar_url")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Household {
+  id                   String    @id @default(uuid())
+  kkNumber             String    @unique @map("kk_number")
+  blok                 String?
+  rt                   String?
+  houseNumber          String?   @map("house_number")
+  houseType            String?   @map("house_type")
+  ownershipStatus      String?   @map("ownership_status")
+  startDateOfOccupancy DateTime? @map("start_date_of_occupancy")
+  createdBy            String    @map("created_by")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  members Resident[]
+  creator User       @relation(fields: [createdBy], references: [id])
+
+  @@map("households")
+}
+
+model Resident {
+  id             String    @id @default(uuid())
+  fullName       String    @map("full_name")
+  idNumber       String?   @map("id_number")
+  gender         String
+  dateOfBirth    DateTime? @map("date_of_birth")
+  maritalStatus  String?   @map("marital_status")
+  occupation     String?
+  email          String?
+  familyRelation String    @default("LAINNYA") @map("family_relation")
+  householdId    String    @map("household_id")
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [id])
+
+  @@map("residents")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  date        DateTime
+  type        String
+  category    String
+  amount      Decimal  @db.Decimal(12, 2)
+  description String?
+  balance     Decimal  @db.Decimal(12, 2)
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  creator User @relation(fields: [createdBy], references: [id])
+
+  @@map("transactions")
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  category    String   @default("umum")
+  isPublished Boolean  @default(true) @map("is_published")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("announcements")
+}
