@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateHouseholdDto } from './dto/create-household.dto';
 import { UpdateHouseholdDto } from './dto/update-household.dto';
@@ -60,10 +64,7 @@ export class HouseholdsService {
       where: { id },
       include: {
         members: {
-          orderBy: [
-            { familyRelation: 'asc' },
-            { createdAt: 'asc' },
-          ],
+          orderBy: [{ familyRelation: 'asc' }, { createdAt: 'asc' }],
         },
       },
     });
@@ -148,7 +149,9 @@ export class HouseholdsService {
           fullName: dto.head.fullName,
           idNumber: dto.head.idNumber,
           gender: dto.head.gender,
-          dateOfBirth: dto.head.dateOfBirth ? new Date(dto.head.dateOfBirth) : null,
+          dateOfBirth: dto.head.dateOfBirth
+            ? new Date(dto.head.dateOfBirth)
+            : null,
           maritalStatus: dto.head.maritalStatus,
           occupation: dto.head.occupation,
           email: dto.head.email,

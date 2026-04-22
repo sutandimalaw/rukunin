@@ -33,10 +33,7 @@ export class FinanceController {
   }
 
   @Post()
-  create(
-    @Body() dto: CreateTransactionDto,
-    @CurrentUser('id') userId: string,
-  ) {
+  create(@Body() dto: CreateTransactionDto, @CurrentUser('id') userId: string) {
     return this.financeService.create(dto, userId);
   }
 

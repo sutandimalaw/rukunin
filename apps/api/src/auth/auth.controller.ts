@@ -1,13 +1,16 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
+  Param,
   UseGuards,
   Req,
   Res,
   Get,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
@@ -30,6 +33,11 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authService.register(dto);
+
+    // WARGA: pending approval, tidak ada token
+    if ('pending' in result) {
+      return { message: result.message, pending: true };
+    }
 
     this.setRefreshTokenCookie(response, result.refreshToken);
 
@@ -85,6 +93,36 @@ export class AuthController {
   @ApiBearerAuth()
   async getMe(@CurrentUser() user: { id: string }) {
     return this.authService.getProfile(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('admin/pending-users')
+  @ApiBearerAuth()
+  async getPendingUsers(@CurrentUser() user: { role: string }) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.authService.getPendingUsers();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('admin/users/:id/approve')
+  @ApiBearerAuth()
+  async approveUser(
+    @Param('id') id: string,
+    @CurrentUser() user: { role: string },
+  ) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.authService.approveUser(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('admin/users/:id/reject')
+  @ApiBearerAuth()
+  async rejectUser(
+    @Param('id') id: string,
+    @CurrentUser() user: { role: string },
+  ) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.authService.rejectUser(id);
   }
 
   private setRefreshTokenCookie(response: Response, token: string) {

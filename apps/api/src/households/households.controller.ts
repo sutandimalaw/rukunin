@@ -41,10 +41,7 @@ export class HouseholdsController {
   }
 
   @Post()
-  create(
-    @Body() dto: CreateHouseholdDto,
-    @CurrentUser('id') userId: string,
-  ) {
+  create(@Body() dto: CreateHouseholdDto, @CurrentUser('id') userId: string) {
     return this.householdsService.create(dto, userId);
   }
 

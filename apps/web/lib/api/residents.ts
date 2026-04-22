@@ -53,6 +53,22 @@ export interface CreateResidentData {
   familyRelation: string;
 }
 
+export interface UpsertMyProfileData {
+  kkNumber: string;
+  blok?: string;
+  rt?: string;
+  houseNumber?: string;
+  houseType?: string;
+  ownershipStatus?: string;
+
+  fullName: string;
+  idNumber?: string;
+  gender: string;
+  dateOfBirth?: string;
+  maritalStatus?: string;
+  occupation?: string;
+}
+
 export const residentsApi = {
   getAll: (params?: {
     page?: number;
@@ -89,4 +105,12 @@ export const residentsApi = {
 
   delete: (id: string) =>
     apiFetch<void>(`/residents/${id}`, { method: 'DELETE' }),
+
+  getMyProfile: () => apiFetch<Resident>('/residents/my-profile'),
+
+  upsertMyProfile: (data: UpsertMyProfileData) =>
+    apiFetch<Resident>('/residents/my-profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 };

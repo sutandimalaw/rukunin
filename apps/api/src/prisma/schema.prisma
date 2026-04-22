@@ -7,11 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  WARGA
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
-  createdAt DateTime @default(now()) @map("created_at")
+  role      UserRole   @default(ADMIN)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   profile      Profile?
@@ -48,8 +61,9 @@ model Household {
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
-  members Resident[]
-  creator User       @relation(fields: [createdBy], references: [id])
+  members  Resident[]
+  billings DuesBilling[]
+  creator  User       @relation(fields: [createdBy], references: [id])
 
   @@map("households")
 }
@@ -102,4 +116,22 @@ model Announcement {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("announcements")
+}
+
+model DuesBilling {
+  id          String    @id @default(uuid())
+  householdId String    @map("household_id")
+  period      String    // format "2026-04"
+  amount      Decimal   @db.Decimal(12, 2)
+  status      String    @default("UNPAID") // UNPAID, PAID
+  paidAt      DateTime? @map("paid_at")
+  paidBy      String?   @map("paid_by")
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@unique([householdId, period])
+  @@map("dues_billings")
 }

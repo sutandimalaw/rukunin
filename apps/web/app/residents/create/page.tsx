@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Breadcrumb,
@@ -54,7 +54,7 @@ interface ResidentForm {
   familyRelation: string
 }
 
-export default function TambahWargaPage() {
+function TambahWargaContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
@@ -482,5 +482,13 @@ export default function TambahWargaPage() {
         )}
       </div>
     </SidebarInset>
+  )
+}
+
+export default function TambahWargaPage() {
+  return (
+    <Suspense>
+      <TambahWargaContent />
+    </Suspense>
   )
 }

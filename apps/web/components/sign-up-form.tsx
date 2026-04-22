@@ -11,6 +11,13 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -21,6 +28,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
+  const [role, setRole] = useState<'ADMIN' | 'WARGA'>('WARGA')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -37,9 +45,17 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     }
 
     try {
-      const result = await authApi.register(email, password)
+      const result = await authApi.register(email, password, role)
+      if ('pending' in result) {
+        router.push('/auth/pending-approval')
+        return
+      }
       setAccessToken(result.accessToken)
-      router.push('/')
+      if (result.user.role === 'WARGA') {
+        router.push('/portal')
+      } else {
+        router.push('/')
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Gagal membuat akun')
     } finally {
@@ -57,6 +73,23 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
         <CardContent>
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="role">Daftar sebagai</Label>
+                <Select value={role} onValueChange={(v) => setRole(v as 'ADMIN' | 'WARGA')}>
+                  <SelectTrigger id="role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="WARGA">Warga RT</SelectItem>
+                    <SelectItem value="ADMIN">Admin RT</SelectItem>
+                  </SelectContent>
+                </Select>
+                {role === 'WARGA' && (
+                  <p className="text-xs text-muted-foreground">
+                    Akun warga perlu disetujui admin RT sebelum bisa login.
+                  </p>
+                )}
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

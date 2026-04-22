@@ -8,6 +8,7 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { ReportsModule } from './reports/reports.module';
 import { HouseholdsModule } from './households/households.module';
+import { DuesModule } from './dues/dues.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -22,6 +23,7 @@ import { AppService } from './app.service';
     AnnouncementsModule,
     ReportsModule,
     HouseholdsModule,
+    DuesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

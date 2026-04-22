@@ -8,7 +8,8 @@ import {
   CircleDollarSign,
   Bell,
   FileTextIcon,
-  House
+  House,
+  UserCheck
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -75,8 +76,13 @@ const data = {
     },
     {
       title: "Keuangan",
-      url: "/finance",
+      url: "#",
       icon: CircleDollarSign,
+      isActive: true,
+      items: [
+        { title: "Kas RT", url: "/finance" },
+        { title: "Iuran Warga", url: "/iuran-warga" },
+      ],
     },
     {
       title: "Pengumuman",
@@ -87,6 +93,11 @@ const data = {
       title: "Laporan",
       url: "/report",
       icon: FileTextIcon,
+    },
+    {
+      title: "Kelola Pengguna",
+      url: "/kelola-pengguna",
+      icon: UserCheck,
     },
   ],
   // projects: [

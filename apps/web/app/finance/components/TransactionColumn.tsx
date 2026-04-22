@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table"
-import {Transaction } from "../interface"
+import { Transaction } from "@/lib/api/transactions"
 import { Button } from "@/components/ui/button"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -13,11 +13,12 @@ export const columns: ColumnDef<Transaction>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: "Tanggal",
-    cell: ({ row }) => (
-      <div className="capitalize">{formatDateTime(row.getValue("created_at"))}</div>
-    ),
+    cell: ({ row }) => {
+      const date = row.getValue("createdAt") as string | undefined
+      return <div className="capitalize">{date ? formatDateTime(date) : '-'}</div>
+    },
   },
   {
     accessorKey: "category",
@@ -41,22 +42,32 @@ export const columns: ColumnDef<Transaction>[] = [
     header: () => <div className="">Nominal</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"))
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
+      const type = row.original.type
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
       }).format(amount)
 
-      return <div className=" font-medium">{row.getValue("amount")}</div>
+      return (
+        <div className={`font-medium ${type === 'IN' ? 'text-green-600' : 'text-red-600'}`}>
+          {formatted}
+        </div>
+      )
     },
   },
- {
+  {
     accessorKey: "balance",
-    header: "Balance",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("balance")}</div>
-    ),
+    header: "Saldo",
+    cell: ({ row }) => {
+      const balance = parseFloat(row.getValue("balance"))
+      const formatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+      }).format(balance)
+      return <div className="font-medium">{formatted}</div>
+    },
   },
   {
     id: "actions",

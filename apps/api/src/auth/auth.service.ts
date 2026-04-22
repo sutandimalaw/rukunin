@@ -27,26 +27,46 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const isWarga = dto.role === 'WARGA';
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         password: hashedPassword,
+        role: dto.role ?? 'ADMIN',
+        status: isWarga ? 'PENDING' : 'ACTIVE',
       },
     });
 
-    const profile = await this.prisma.profile.create({
+    await this.prisma.profile.create({
       data: { id: user.id },
     });
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    // WARGA: jangan kasih token, kembalikan pesan pending
+    if (isWarga) {
+      return {
+        pending: true as const,
+        message: 'Akun berhasil dibuat. Menunggu persetujuan admin RT.',
+      };
+    }
 
+    // ADMIN: langsung aktif, kasih token
+    const profile = await this.prisma.profile.findUnique({
+      where: { id: user.id },
+    });
+    const residentCount = await this.prisma.resident.count({
+      where: { email: user.email },
+    });
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
     return {
       ...tokens,
       user: {
         id: user.id,
         email: user.email,
+        role: user.role,
+        status: user.status,
         profile,
+        isProfileComplete: residentCount > 0,
       },
     };
   }
@@ -66,24 +86,41 @@ export class AuthService {
       return null;
     }
 
+    if (user.status === 'PENDING') {
+      throw new UnauthorizedException('Akun kamu belum disetujui admin RT');
+    }
+    if (user.status === 'REJECTED') {
+      throw new UnauthorizedException('Akun kamu ditolak oleh admin RT');
+    }
+
+    const residentCount = await this.prisma.resident.count({
+      where: { email: user.email },
+    });
+
     return {
       id: user.id,
       email: user.email,
+      role: user.role,
+      status: user.status,
       profile: user.profile,
+      isProfileComplete: residentCount > 0,
     };
   }
 
-  async login(user: { id: string; email: string; profile: unknown }) {
-    const tokens = await this.generateTokens(user.id, user.email);
-
-    return {
-      ...tokens,
-      user,
-    };
+  async login(user: {
+    id: string;
+    email: string;
+    role: string;
+    profile: unknown;
+  }) {
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    return { ...tokens, user };
   }
 
   async refresh(userId: string, email: string) {
-    const tokens = await this.generateTokens(userId, email);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const role = user?.role ?? 'ADMIN';
+    const tokens = await this.generateTokens(userId, email, role);
     return tokens;
   }
 
@@ -97,15 +134,60 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
+    const residentCount = await this.prisma.resident.count({
+      where: { email: user.email },
+    });
+
     return {
       id: user.id,
       email: user.email,
+      role: user.role,
+      status: user.status,
       profile: user.profile,
+      isProfileComplete: residentCount > 0,
     };
   }
 
-  private async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
+  async getPendingUsers() {
+    return this.prisma.user.findMany({
+      where: { status: 'PENDING' },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async approveUser(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User tidak ditemukan');
+    if (user.status !== 'PENDING')
+      throw new ConflictException('User tidak dalam status pending');
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { status: 'ACTIVE' },
+      select: { id: true, email: true, role: true, status: true },
+    });
+  }
+
+  async rejectUser(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User tidak ditemukan');
+    if (user.status !== 'PENDING')
+      throw new ConflictException('User tidak dalam status pending');
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { status: 'REJECTED' },
+      select: { id: true, email: true, role: true, status: true },
+    });
+  }
+
+  private async generateTokens(userId: string, email: string, role: string) {
+    const payload = { sub: userId, email, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {

@@ -12,6 +12,7 @@ interface StatCardProps {
   value: string | number
   subtitle?: string
   icon?: React.ReactNode
+  onClick?: () => void
 }
 
 const StatCard = ({
@@ -19,9 +20,13 @@ const StatCard = ({
   value,
   subtitle,
   icon,
+  onClick,
 }: StatCardProps) => {
   return (
-    <Card className="gap-0">
+    <Card
+      className={`gap-0${onClick ? ' cursor-pointer transition-colors hover:bg-muted/50' : ''}`}
+      onClick={onClick}
+    >
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {icon && <CardAction>{icon}</CardAction>}

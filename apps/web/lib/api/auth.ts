@@ -3,6 +3,9 @@ import { apiFetch } from './client';
 export interface AuthUser {
   id: string;
   email: string;
+  role: 'ADMIN' | 'WARGA';
+  status: 'PENDING' | 'ACTIVE' | 'REJECTED';
+  isProfileComplete: boolean;
   profile: {
     id: string;
     fullName: string | null;
@@ -17,11 +20,26 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+export interface PendingResponse {
+  message: string;
+  pending: true;
+}
+
+export type RegisterResponse = AuthResponse | PendingResponse;
+
+export interface PendingUser {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  createdAt: string;
+}
+
 export const authApi = {
-  register: (email: string, password: string) =>
-    apiFetch<AuthResponse>('/auth/register', {
+  register: (email: string, password: string, role?: 'ADMIN' | 'WARGA') =>
+    apiFetch<RegisterResponse>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, role }),
     }),
 
   login: (email: string, password: string) =>
@@ -37,4 +55,17 @@ export const authApi = {
     apiFetch<{ accessToken: string }>('/auth/refresh', { method: 'POST' }),
 
   me: () => apiFetch<AuthUser>('/auth/me'),
+
+  getPendingUsers: () =>
+    apiFetch<PendingUser[]>('/auth/admin/pending-users'),
+
+  approveUser: (id: string) =>
+    apiFetch<{ id: string; status: string }>('/auth/admin/users/' + id + '/approve', {
+      method: 'PATCH',
+    }),
+
+  rejectUser: (id: string) =>
+    apiFetch<{ id: string; status: string }>('/auth/admin/users/' + id + '/reject', {
+      method: 'PATCH',
+    }),
 };

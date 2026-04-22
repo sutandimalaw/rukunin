@@ -13,27 +13,21 @@ import {
 } from "@tanstack/react-table"
 import { columns } from "./TransactionColumn"
 import DataTable from "@/components/shared/DataTable"
+import { Transaction } from "@/lib/api/transactions"
 
 type ITableProps = {
-  data : any[] | undefined
-  isLoading : boolean
-  error : Error | null
+  data: Transaction[] | undefined
+  isLoading: boolean
+  error: Error | null
 }
 
-const TableTransaction =( 
-  {
-    data,
-    isLoading,
-    error
-  } : ITableProps  
-)=> {
-
+const TableTransaction = ({ data }: ITableProps) => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
-    data : data ??[],
+    data: data ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -51,13 +45,10 @@ const TableTransaction =(
 
   return (
     <div className="m-6">
-      <div className="flex items-center py-4">      
-       History Transaksi
+      <div className="flex items-center py-4">
+        History Transaksi
       </div>
-      <DataTable
-        table={table}
-        columnsLength={columns.length}
-      />
+      <DataTable table={table} columnsLength={columns.length} />
     </div>
   )
 }

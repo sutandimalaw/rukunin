@@ -30,8 +30,12 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     setError(null)
 
     try {
-      await login(email, password)
-      router.push('/')
+      const user = await login(email, password)
+      if (user.role === 'WARGA') {
+        router.push('/portal')
+      } else {
+        router.push('/')
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Email atau password salah')
     } finally {
@@ -87,6 +91,12 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               Belum punya akun?{' '}
               <Link href="/auth/sign-up" className="underline underline-offset-4">
                 Daftar
+              </Link>
+            </div>
+            <div className="mt-3 border-t pt-3 text-center text-xs text-muted-foreground">
+              Warga RT?{' '}
+              <Link href="/auth/sign-up" className="underline underline-offset-4">
+                Daftar akun warga di sini
               </Link>
             </div>
           </form>
