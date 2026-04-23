@@ -3,11 +3,14 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { duesApi } from '@/lib/api/dues'
+import { announcementsApi } from '@/lib/api/announcements'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import {
   Select,
   SelectContent,
@@ -60,6 +63,11 @@ export default function PortalWargaPage() {
 
   const requestPayMutation = useRequestPay()
 
+  const { data: announcements } = useQuery({
+    queryKey: ['announcements', { limit: 5 }],
+    queryFn: () => announcementsApi.getAll({ limit: 5 }),
+  })
+
   const summary = useMemo(() => {
     if (!data) return null
     const totalTagihan = data.billings.reduce((s, b) => s + Number(b.amount), 0)
@@ -96,26 +104,30 @@ export default function PortalWargaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <SidebarInset>
       {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold">Portal Warga Rukunin</h1>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/account/profile">Ubah Data</Link>
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              Keluar
-            </Button>
+      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <div className="flex items-center gap-2 px-4 w-full">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+          <div className="flex items-center justify-between flex-1">
+            <div>
+              <h1 className="text-lg font-semibold">Portal Warga Rukunin</h1>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/account/profile">Ubah Data</Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                Keluar
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
+      <main className="flex flex-1 flex-col gap-4 p-4 pt-0 max-w-5xl mx-auto w-full">
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Memuat data...</p>
         ) : error ? (
@@ -144,6 +156,33 @@ export default function PortalWargaPage() {
                 </dl>
               </CardContent>
             </Card>
+
+            {/* Pengumuman Terbaru */}
+            {announcements && announcements.data.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Pengumuman Terbaru</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3">
+                  {announcements.data.map((a) => (
+                    <div key={a.id} className="border-b pb-3 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm">{a.title}</span>
+                        <Badge variant="secondary" className="text-xs">{a.category}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{a.content}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(a.createdAt).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Summary Cards */}
             {summary && (
@@ -306,6 +345,6 @@ export default function PortalWargaPage() {
           </div>
         ) : null}
       </main>
-    </div>
+    </SidebarInset>
   )
 }

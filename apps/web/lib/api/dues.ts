@@ -20,6 +20,21 @@ export interface DuesBilling {
   };
 }
 
+export interface HouseholdBilling {
+  id: string
+  period: string
+  amount: string
+  status: string
+  paidAt: string | null
+  notes: string | null
+  household: {
+    kkNumber: string
+    kepalaKeluarga: string
+    blok: string | null
+    houseNumber: string | null
+  }
+}
+
 export interface DuesSummary {
   totalKK: number;
   paid: number;
@@ -86,6 +101,9 @@ export const duesApi = {
 
   getSummary: (period?: string) =>
     apiFetch<DuesSummary>(period ? `/dues/summary?period=${period}` : '/dues/summary'),
+
+  getByHousehold: (householdId: string) =>
+    apiFetch<HouseholdBilling[]>(`/dues/household/${householdId}`),
 
   generate: (data: GenerateDuesData) =>
     apiFetch<{ created: number; message: string }>('/dues/generate', {

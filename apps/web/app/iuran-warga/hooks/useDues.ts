@@ -94,6 +94,14 @@ export function useRequestPay() {
   })
 }
 
+export function useGetHouseholdDues(householdId: string | null) {
+  return useQuery({
+    queryKey: ['dues', 'household', householdId],
+    queryFn: () => duesApi.getByHousehold(householdId!),
+    enabled: !!householdId,
+  })
+}
+
 export function useRejectPay() {
   const queryClient = useQueryClient()
   return useMutation({

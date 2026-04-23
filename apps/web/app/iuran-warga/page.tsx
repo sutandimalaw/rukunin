@@ -53,6 +53,7 @@ import {
   useGetDelinquent,
   useBatchPayDues,
   useRejectPay,
+  useGetHouseholdDues,
 } from './hooks/useDues'
 
 function formatRupiah(amount: number | string) {
@@ -102,6 +103,8 @@ export default function IuranWargaPage() {
   const [selectedHousehold, setSelectedHousehold] = useState<DelinquentHousehold | null>(null)
   const [selectedBillingIds, setSelectedBillingIds] = useState<string[]>([])
   const [batchPayNotes, setBatchPayNotes] = useState('')
+  const [historyHouseholdId, setHistoryHouseholdId] = useState<string | null>(null)
+  const [historyHouseholdName, setHistoryHouseholdName] = useState('')
 
   const queryParams = {
     period: (period && period !== 'all') ? period : undefined,
@@ -117,6 +120,7 @@ export default function IuranWargaPage() {
   const { data: delinquentData, isLoading: isDelinquentLoading } = useGetDelinquent({ minMonths, lookback })
   const batchPayMutation = useBatchPayDues()
   const rejectPayMutation = useRejectPay()
+  const { data: householdHistory, isLoading: isHistoryLoading } = useGetHouseholdDues(historyHouseholdId)
 
   const periodOptions = getPeriodOptions()
 
@@ -315,7 +319,17 @@ export default function IuranWargaPage() {
                           <TableCell className="font-mono text-sm">
                             {row.household.kkNumber}
                           </TableCell>
-                          <TableCell>{row.household.kepalaKeluarga}</TableCell>
+                          <TableCell>
+                            <button
+                              className="text-left font-medium hover:underline hover:text-primary"
+                              onClick={() => {
+                                setHistoryHouseholdId(row.household.id)
+                                setHistoryHouseholdName(row.household.kepalaKeluarga)
+                              }}
+                            >
+                              {row.household.kepalaKeluarga}
+                            </button>
+                          </TableCell>
                           <TableCell>
                             {row.household.blok ?? '-'}/{row.household.houseNumber ?? '-'}
                           </TableCell>
@@ -634,6 +648,57 @@ export default function IuranWargaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* History Pembayaran Dialog */}
+      <Dialog open={!!historyHouseholdId} onOpenChange={(open) => !open && setHistoryHouseholdId(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>History Pembayaran — {historyHouseholdName}</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            {isHistoryLoading ? (
+              <p className="text-sm text-muted-foreground">Memuat history...</p>
+            ) : !householdHistory?.length ? (
+              <p className="text-sm text-muted-foreground">Belum ada riwayat tagihan.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Periode</TableHead>
+                    <TableHead className="text-right">Nominal</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Tgl Bayar</TableHead>
+                    <TableHead>Catatan</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {householdHistory.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-sm">{formatPeriod(item.period)}</TableCell>
+                      <TableCell className="text-right">{formatRupiah(item.amount)}</TableCell>
+                      <TableCell>
+                        {item.status === 'PAID' ? (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Lunas</Badge>
+                        ) : item.status === 'PENDING' ? (
+                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Menunggu</Badge>
+                        ) : (
+                          <Badge variant="destructive">Belum Bayar</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {item.paidAt ? new Date(item.paidAt).toLocaleDateString('id-ID') : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {item.notes ?? '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </SidebarInset>
   )
 }

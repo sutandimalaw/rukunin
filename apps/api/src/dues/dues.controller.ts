@@ -37,6 +37,11 @@ export class DuesController {
     return this.duesService.getSummary(period);
   }
 
+  @Get('household/:id')
+  getByHousehold(@Param('id') id: string) {
+    return this.duesService.getByHousehold(id);
+  }
+
   @Get('my')
   getMyDues(@CurrentUser() user: { email: string }) {
     return this.duesService.getMyDues(user.email);

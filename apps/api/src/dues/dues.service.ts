@@ -61,6 +61,35 @@ export class DuesService {
     };
   }
 
+  async getByHousehold(householdId: string) {
+    const data = await this.prisma.duesBilling.findMany({
+      where: { householdId },
+      include: {
+        household: {
+          select: {
+            kkNumber: true,
+            blok: true,
+            houseNumber: true,
+            members: {
+              where: { familyRelation: 'KEPALA_KELUARGA' },
+              select: { fullName: true },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: { period: 'desc' },
+    });
+    return data.map((d) => ({
+      ...d,
+      household: {
+        ...d.household,
+        kepalaKeluarga: d.household.members[0]?.fullName ?? '-',
+        members: undefined,
+      },
+    }));
+  }
+
   async getSummary(period?: string) {
     const billings = await this.prisma.duesBilling.findMany({
       where: period ? { period } : undefined,
