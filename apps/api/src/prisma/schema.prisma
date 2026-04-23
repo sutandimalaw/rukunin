@@ -27,10 +27,12 @@ model User {
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  profile      Profile?
-  residents    Resident[]
-  transactions Transaction[]
-  households   Household[]
+  profile             Profile?
+  residents           Resident[]
+  transactions        Transaction[]
+  households          Household[]
+  kegiatanWarga       KegiatanWarga[]
+  kegiatanPartisipasi KegiatanPeserta[]
 
   @@map("users")
 }
@@ -134,4 +136,45 @@ model DuesBilling {
 
   @@unique([householdId, period])
   @@map("dues_billings")
+}
+
+model KegiatanWarga {
+  id              String    @id @default(uuid())
+  title           String
+  description     String
+  category        String    @default("umum")
+  status          String    @default("OPEN_VOTE")
+
+  minParticipants Int?      @map("min_participants")
+  voteDeadline    DateTime? @map("vote_deadline")
+
+  startDate       DateTime? @map("start_date")
+  endDate         DateTime? @map("end_date")
+  location        String?
+
+  isRecurring     Boolean   @default(false) @map("is_recurring")
+  recurrenceRule  String?   @map("recurrence_rule")
+
+  createdBy       String    @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  creator      User              @relation(fields: [createdBy], references: [id])
+  participants KegiatanPeserta[]
+
+  @@map("kegiatan_warga")
+}
+
+model KegiatanPeserta {
+  id         String   @id @default(uuid())
+  kegiatanId String   @map("kegiatan_id")
+  userId     String   @map("user_id")
+  type       String   // VOTE | RSVP | ATTENDED
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  kegiatan KegiatanWarga @relation(fields: [kegiatanId], references: [id], onDelete: Cascade)
+  user     User          @relation(fields: [userId], references: [id])
+
+  @@unique([kegiatanId, userId, type])
+  @@map("kegiatan_peserta")
 }

@@ -9,7 +9,8 @@ import {
   Bell,
   FileTextIcon,
   House,
-  UserCheck
+  UserCheck,
+  CalendarHeart,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -25,11 +26,6 @@ import { LogoutButton } from "./logout-button"
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
       name: "Rukunin",
@@ -37,26 +33,12 @@ const data = {
       plan: "Web RT",
     },
   ],
-  navMain: [
+  navMainAdmin: [
     {
       title: "Dashboard",
       url: "/",
       icon: House,
       isActive: true,
-      // items: [
-      //   {
-      //     title: "History",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Starred",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Settings",
-      //     url: "#",
-      //   },
-      // ],
     },
     {
       title: "Kependudukan",
@@ -90,6 +72,11 @@ const data = {
       icon: Bell,
     },
     {
+      title: "Kegiatan Warga",
+      url: "/kegiatan-warga",
+      icon: CalendarHeart,
+    },
+    {
       title: "Laporan",
       url: "/report",
       icon: FileTextIcon,
@@ -100,27 +87,30 @@ const data = {
       icon: UserCheck,
     },
   ],
-  // projects: [
-  //   {
-  //     name: "Design Engineering",
-  //     url: "#",
-  //     icon: Frame,
-  //   },
-  //   {
-  //     name: "Sales & Marketing",
-  //     url: "#",
-  //     icon: PieChart,
-  //   },
-  //   {
-  //     name: "Travel",
-  //     url: "#",
-  //     icon: Map,
-  //   },
-  // ],
+  navMainWarga: [
+    {
+      title: "Portal",
+      url: "/portal",
+      icon: House,
+      isActive: true,
+    },
+    {
+      title: "Pengumuman",
+      url: "/portal/pengumuman",
+      icon: Bell,
+    },
+    {
+      title: "Kegiatan",
+      url: "/portal/kegiatan",
+      icon: CalendarHeart,
+    },
+  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
+
+  const navItems = user?.role === 'WARGA' ? data.navMainWarga : data.navMainAdmin
 
   return (
     <aside>
@@ -129,17 +119,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <TeamSwitcher teams={data.teams} />
         </SidebarHeader>
         <SidebarContent>
-          <NavMain items={data.navMain} />
-          {/* <NavProjects projects={data.projects} /> */}
+          <NavMain items={navItems} />
         </SidebarContent>
         <SidebarFooter>
           <LogoutButton />
-          {/* <NavUser user={data.user} /> */}
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-
     </aside>
-    
   )
 }

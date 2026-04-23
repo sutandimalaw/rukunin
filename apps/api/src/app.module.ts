@@ -9,6 +9,7 @@ import { AnnouncementsModule } from './announcements/announcements.module';
 import { ReportsModule } from './reports/reports.module';
 import { HouseholdsModule } from './households/households.module';
 import { DuesModule } from './dues/dues.module';
+import { KegiatanWargaModule } from './kegiatan-warga/kegiatan-warga.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -24,6 +25,7 @@ import { AppService } from './app.service';
     ReportsModule,
     HouseholdsModule,
     DuesModule,
+    KegiatanWargaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
