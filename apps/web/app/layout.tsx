@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider } from "@/provider/auth-provider";
 import Providers from "./providers"
+import { LayoutShell } from "@/components/layout-shell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -28,14 +28,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${jakartaSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <Providers>
+          <Providers>
+            <LayoutShell>
               {children}
-            </Providers>
-          </SidebarProvider>
+            </LayoutShell>
+          </Providers>
         </AuthProvider>
       </body>
     </html>

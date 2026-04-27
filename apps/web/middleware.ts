@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   '/auth/error',
   '/auth/pending-approval',
   '/login',
+  '/landing',
 ]
 
 // Halaman yang hanya boleh diakses ADMIN

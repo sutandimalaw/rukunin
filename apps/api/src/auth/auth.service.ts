@@ -162,6 +162,19 @@ export class AuthService {
     });
   }
 
+  async getActiveUsers() {
+    return this.prisma.user.findMany({
+      where: { status: 'ACTIVE' },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        profile: { select: { fullName: true, avatarUrl: true } },
+      },
+      orderBy: [{ profile: { fullName: 'asc' } }, { email: 'asc' }],
+    });
+  }
+
   async approveUser(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('User tidak ditemukan');

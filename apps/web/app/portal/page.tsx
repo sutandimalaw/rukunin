@@ -26,11 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Wallet, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Wallet, CheckCircle, XCircle, Clock, AlertTriangle, UserCircle } from 'lucide-react'
 import StatCard from '@/components/shared/StatCard'
 import { useAuth } from '@/provider/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useRequestPay } from '@/app/iuran-warga/hooks/useDues'
+import { useGetMyProfile } from './hooks/useGetMyProfile'
 import Link from 'next/link'
 
 function formatRupiah(amount: number | string) {
@@ -55,6 +56,8 @@ export default function PortalWargaPage() {
   const [yearFilter, setYearFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  const { data: myProfile, isLoading: profileLoading, isError: profileError } = useGetMyProfile()
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['dues', 'my'],
@@ -128,11 +131,64 @@ export default function PortalWargaPage() {
       </header>
 
       <main className="flex flex-1 flex-col gap-4 p-4 pt-0 max-w-5xl mx-auto w-full">
+        {/* Banner: profil belum diisi */}
+        {!profileLoading && profileError && (
+          <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-medium text-yellow-800">Data kependudukan belum lengkap</p>
+              <p className="text-sm text-yellow-700 mt-1">
+                Lengkapi data diri dan nomor KK kamu agar bisa melihat info tagihan iuran dan layanan RT.
+              </p>
+              <Button asChild variant="outline" size="sm" className="mt-2">
+                <Link href="/account/profile">Lengkapi Data Sekarang</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Card: ringkasan data kependudukan */}
+        {!profileLoading && myProfile && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <UserCircle className="h-4 w-4" /> Data Kependudukan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <dt className="text-muted-foreground">Nama</dt>
+                  <dd className="font-medium">{myProfile.fullName}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">No KK</dt>
+                  <dd className="font-mono text-xs">{myProfile.household?.kkNumber ?? '-'}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Blok / No Rumah</dt>
+                  <dd className="font-medium">
+                    {myProfile.household?.blok ?? '-'} / {myProfile.household?.houseNumber ?? '-'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Status</dt>
+                  <dd>
+                    <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
+                      Terdaftar
+                    </Badge>
+                  </dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
+        )}
+
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Memuat data...</p>
-        ) : error ? (
+        ) : error && !profileError ? (
           <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
-            Gagal memuat data. Pastikan email kamu terdaftar di data warga RT.
+            Gagal memuat data. Silakan coba lagi.
           </div>
         ) : data ? (
           <div className="flex flex-col gap-6">

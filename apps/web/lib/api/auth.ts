@@ -35,6 +35,13 @@ export interface PendingUser {
   createdAt: string;
 }
 
+export interface ActiveUser {
+  id: string;
+  email: string;
+  role: string;
+  profile: { fullName: string | null; avatarUrl: string | null } | null;
+}
+
 export const authApi = {
   register: (email: string, password: string, role?: 'ADMIN' | 'WARGA') =>
     apiFetch<RegisterResponse>('/auth/register', {
@@ -58,6 +65,9 @@ export const authApi = {
 
   getPendingUsers: () =>
     apiFetch<PendingUser[]>('/auth/admin/pending-users'),
+
+  getActiveUsers: () =>
+    apiFetch<ActiveUser[]>('/auth/admin/active-users'),
 
   approveUser: (id: string) =>
     apiFetch<{ id: string; status: string }>('/auth/admin/users/' + id + '/approve', {

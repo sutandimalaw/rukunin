@@ -1,4 +1,5 @@
 import React from "react"
+import { cn } from "@/lib/utils"
 import {
   Card,
   CardAction,
@@ -24,17 +25,28 @@ const StatCard = ({
 }: StatCardProps) => {
   return (
     <Card
-      className={`gap-0${onClick ? ' cursor-pointer transition-colors hover:bg-muted/50' : ''}`}
+      className={cn(
+        "gap-0 border-transparent shadow-xs hover:shadow-sm transition-all duration-200",
+        onClick && "cursor-pointer hover:-translate-y-0.5"
+      )}
       onClick={onClick}
     >
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {icon && <CardAction>{icon}</CardAction>}
+        <CardTitle className="text-[13px] font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+        {icon && (
+          <CardAction>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/8 text-primary [&_svg]:size-[18px]">
+              {icon}
+            </div>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-[28px] font-bold tracking-tight leading-none">{value}</div>
         {subtitle && (
-          <div className="text-sm text-gray-500">{subtitle}</div>
+          <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>
         )}
       </CardContent>
     </Card>

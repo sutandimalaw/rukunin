@@ -104,6 +104,14 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('admin/active-users')
+  @ApiBearerAuth()
+  async getActiveUsers(@CurrentUser() user: { role: string }) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.authService.getActiveUsers();
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('admin/users/:id/approve')
   @ApiBearerAuth()
   async approveUser(

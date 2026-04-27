@@ -33,6 +33,26 @@ model User {
   households          Household[]
   kegiatanWarga       KegiatanWarga[]
   kegiatanPartisipasi KegiatanPeserta[]
+  layananDiajukan     LayananWarga[]    @relation("LayananRequester")
+  layananDiproses     LayananWarga[]    @relation("LayananProcessor")
+  umkmUsaha           UmkmUsaha[]
+  penyediaJasaSubmitted PenyediaJasa[]       @relation("PenyediaJasaSubmitter")
+  penyediaJasaReviews   PenyediaJasaReview[] @relation("PenyediaJasaReviewer")
+  pengurusAs            Pengurus[]           @relation("PengurusUser")
+  pengurusCreated       Pengurus[]           @relation("PengurusCreator")
+  inventarisCreated     Inventaris[]         @relation("InventarisCreator")
+  peminjamanDiajukan    PeminjamanInventaris[] @relation("PeminjamanPeminjam")
+  peminjamanDiproses    PeminjamanInventaris[] @relation("PeminjamanProcessor")
+  petugasKeamananCreated PetugasKeamanan[]     @relation("PetugasCreator")
+  bukuTamuRecorded       BukuTamu[]            @relation("TamuRecorder")
+  laporanInsidenReported LaporanInsiden[]      @relation("InsidenReporter")
+  laporanInsidenProcessed LaporanInsiden[]     @relation("InsidenProcessor")
+  pollingCreated          Polling[]            @relation("PollingCreator")
+  pollingVotes            PollingVote[]        @relation("PollingVoter")
+  kontakDaruratCreated    KontakDarurat[]      @relation("KontakCreator")
+  saranMasukanSubmitted   SaranMasukan[]       @relation("SaranSubmitter")
+  saranMasukanResponded   SaranMasukan[]       @relation("SaranResponder")
+  profilProfesi           ProfilProfesi?
 
   @@map("users")
 }
@@ -177,4 +197,346 @@ model KegiatanPeserta {
 
   @@unique([kegiatanId, userId, type])
   @@map("kegiatan_peserta")
+}
+
+model LayananWarga {
+  id          String    @id @default(uuid())
+  type        String    // SURAT_KETERANGAN | LAPORAN_KERUSAKAN | LAPORAN_KEAMANAN | PENGADUAN_UMUM
+  subject     String
+  description String
+  purpose     String?
+  location    String?
+  status      String    @default("PENDING")  // PENDING | PROSES | SELESAI | DITOLAK
+  adminNotes  String?   @map("admin_notes")
+
+  requestedBy String    @map("requested_by")
+  processedBy String?   @map("processed_by")
+  processedAt DateTime? @map("processed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  requester User  @relation("LayananRequester", fields: [requestedBy], references: [id])
+  processor User? @relation("LayananProcessor", fields: [processedBy], references: [id])
+
+  @@map("layanan_warga")
+}
+
+model UmkmUsaha {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  category    String   // MAKANAN | MINUMAN | JASA | KERAJINAN | FASHION | ELEKTRONIK | LAINNYA
+  address     String?
+  whatsapp    String
+  isActive    Boolean  @default(true) @map("is_active")
+  status      String   @default("PENDING") // PENDING | ACTIVE | REJECTED
+  adminNotes  String?  @map("admin_notes")
+  ownerId     String   @map("owner_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner    User         @relation(fields: [ownerId], references: [id])
+  products UmkmProduk[]
+
+  @@map("umkm_usaha")
+}
+
+model UmkmProduk {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(12, 2)
+  type        String   // BARANG | JASA
+  isAvailable Boolean  @default(true) @map("is_available")
+  usahaId     String   @map("usaha_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  usaha UmkmUsaha @relation(fields: [usahaId], references: [id], onDelete: Cascade)
+
+  @@map("umkm_produk")
+}
+
+model PenyediaJasa {
+  id          String   @id @default(uuid())
+  personName  String   @map("person_name")
+  category    String   // TUKANG | ART | BABY_SITTER | MONTIR | LAUNDRY | KEBUN | LAINNYA
+  whatsapp    String?
+  description String?
+  area        String?
+  status      String   @default("PENDING") // PENDING | ACTIVE | REJECTED
+  adminNotes  String?  @map("admin_notes")
+
+  submittedBy String   @map("submitted_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  submitter User                 @relation("PenyediaJasaSubmitter", fields: [submittedBy], references: [id])
+  reviews   PenyediaJasaReview[]
+
+  @@map("penyedia_jasa")
+}
+
+model PenyediaJasaReview {
+  id             String   @id @default(uuid())
+  penyediaJasaId String   @map("penyedia_jasa_id")
+  reviewerId     String   @map("reviewer_id")
+  rating         Int      // 1-5
+  comment        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  penyediaJasa PenyediaJasa @relation(fields: [penyediaJasaId], references: [id], onDelete: Cascade)
+  reviewer     User         @relation("PenyediaJasaReviewer", fields: [reviewerId], references: [id])
+
+  @@unique([penyediaJasaId, reviewerId])
+  @@map("penyedia_jasa_reviews")
+}
+
+model Pengurus {
+  id           String   @id @default(uuid())
+  posisi       String
+  customPosisi String?  @map("custom_posisi")
+  urutan       Int      @default(0)
+
+  userId       String?  @map("user_id")
+
+  fullName     String   @map("full_name")
+  whatsapp     String?
+  photoUrl     String?  @map("photo_url")
+
+  periodeStart Int      @map("periode_start")
+  periodeEnd   Int      @map("periode_end")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  notes        String?
+  createdBy    String   @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user    User? @relation("PengurusUser", fields: [userId], references: [id], onDelete: SetNull)
+  creator User  @relation("PengurusCreator", fields: [createdBy], references: [id])
+
+  @@index([isActive, posisi])
+  @@map("pengurus")
+}
+
+model Inventaris {
+  id          String   @id @default(uuid())
+  name        String
+  category    String   // ELEKTRONIK | FURNITURE | ALAT_OLAHRAGA | TENDA_DEKORASI | DAPUR | KEBERSIHAN | LAINNYA
+  description String?
+  quantity    Int      @default(1)
+  condition   String   @default("BAIK") // BAIK | RUSAK_RINGAN | RUSAK_BERAT
+  isAvailable Boolean  @default(true) @map("is_available")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creator     User                   @relation("InventarisCreator", fields: [createdBy], references: [id])
+  peminjaman  PeminjamanInventaris[]
+
+  @@map("inventaris")
+}
+
+model PeminjamanInventaris {
+  id            String    @id @default(uuid())
+  inventarisId  String    @map("inventaris_id")
+  borrowerId    String    @map("borrower_id")
+  quantity      Int       @default(1)
+  borrowDate    DateTime  @map("borrow_date")
+  returnDate    DateTime  @map("return_date")
+  actualReturn  DateTime? @map("actual_return")
+  purpose       String
+  status        String    @default("PENDING") // PENDING | DISETUJUI | DIPINJAM | DIKEMBALIKAN | DITOLAK
+  adminNotes    String?   @map("admin_notes")
+  processedBy   String?   @map("processed_by")
+  processedAt   DateTime? @map("processed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  inventaris  Inventaris @relation(fields: [inventarisId], references: [id], onDelete: Cascade)
+  borrower    User       @relation("PeminjamanPeminjam", fields: [borrowerId], references: [id])
+  processor   User?      @relation("PeminjamanProcessor", fields: [processedBy], references: [id])
+
+  @@map("peminjaman_inventaris")
+}
+
+model PetugasKeamanan {
+  id        String   @id @default(uuid())
+  fullName  String   @map("full_name")
+  shift     String   // PAGI | SIANG | MALAM
+  shiftTime String   @map("shift_time") // e.g. "06:00-14:00"
+  whatsapp  String?
+  isOnDuty  Boolean  @default(false) @map("is_on_duty")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  creator User @relation("PetugasCreator", fields: [createdBy], references: [id])
+
+  @@map("petugas_keamanan")
+}
+
+model BukuTamu {
+  id               String    @id @default(uuid())
+  guestName        String    @map("guest_name")
+  purpose          String
+  destinationBlock String?   @map("destination_block")
+  vehicleType      String?   @map("vehicle_type") // MOTOR | MOBIL | TIDAK_ADA
+  vehicleNumber    String?   @map("vehicle_number")
+  checkInTime      DateTime  @default(now()) @map("check_in_time")
+  checkOutTime     DateTime? @map("check_out_time")
+  notes            String?
+  recordedBy       String    @map("recorded_by")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  recorder User @relation("TamuRecorder", fields: [recordedBy], references: [id])
+
+  @@map("buku_tamu")
+}
+
+model LaporanInsiden {
+  id           String    @id @default(uuid())
+  category     String    // PENCURIAN | VANDALISME | GANGGUAN_KETERTIBAN | ORANG_MENCURIGAKAN | KECELAKAAN | KEBAKARAN | LAINNYA
+  title        String
+  description  String
+  location     String?
+  severity     String    @default("SEDANG") // RENDAH | SEDANG | TINGGI | DARURAT
+  status       String    @default("DILAPORKAN") // DILAPORKAN | DITINDAK | SELESAI | DITUTUP
+  incidentDate DateTime  @map("incident_date")
+  adminNotes   String?   @map("admin_notes")
+  reportedBy   String    @map("reported_by")
+  processedBy  String?   @map("processed_by")
+  processedAt  DateTime? @map("processed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  reporter  User  @relation("InsidenReporter", fields: [reportedBy], references: [id])
+  processor User? @relation("InsidenProcessor", fields: [processedBy], references: [id])
+
+  @@map("laporan_insiden")
+}
+
+// ─── Polling ──────────────────────────────────────────────────────────────────
+
+model Polling {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  deadline    DateTime?
+  status      String    @default("AKTIF") // AKTIF | SELESAI | DIBATALKAN
+  isAnonymous Boolean   @default(false) @map("is_anonymous")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  creator User           @relation("PollingCreator", fields: [createdBy], references: [id])
+  options PollingOption[]
+  votes   PollingVote[]
+
+  @@map("polling")
+}
+
+model PollingOption {
+  id        String @id @default(uuid())
+  pollingId String @map("polling_id")
+  label     String
+  sortOrder Int    @default(0) @map("sort_order")
+
+  polling Polling       @relation(fields: [pollingId], references: [id], onDelete: Cascade)
+  votes   PollingVote[]
+
+  @@map("polling_options")
+}
+
+model PollingVote {
+  id        String   @id @default(uuid())
+  pollingId String   @map("polling_id")
+  optionId  String   @map("option_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  polling Polling       @relation(fields: [pollingId], references: [id], onDelete: Cascade)
+  option  PollingOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  voter   User          @relation("PollingVoter", fields: [userId], references: [id])
+
+  @@unique([pollingId, userId])
+  @@map("polling_votes")
+}
+
+// ─── Kontak Darurat ───────────────────────────────────────────────────────────
+
+model KontakDarurat {
+  id          String   @id @default(uuid())
+  name        String
+  category    String   // RUMAH_SAKIT | POLISI | PEMADAM | PLN | PDAM | AMBULANS | LAINNYA
+  phoneNumber String   @map("phone_number")
+  address     String?
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creator User @relation("KontakCreator", fields: [createdBy], references: [id])
+
+  @@map("kontak_darurat")
+}
+
+// ─── Saran & Masukan ─────────────────────────────────────────────────────────
+
+model SaranMasukan {
+  id            String    @id @default(uuid())
+  category      String    // SARAN | KRITIK | MASUKAN | PUJIAN
+  subject       String
+  content       String
+  isAnonymous   Boolean   @default(false) @map("is_anonymous")
+  status        String    @default("BARU") // BARU | DIBACA | DITANGGAPI
+  adminResponse String?   @map("admin_response")
+  submittedBy   String?   @map("submitted_by")
+  respondedBy   String?   @map("responded_by")
+  respondedAt   DateTime? @map("responded_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  submitter User? @relation("SaranSubmitter", fields: [submittedBy], references: [id])
+  responder User? @relation("SaranResponder", fields: [respondedBy], references: [id])
+
+  @@map("saran_masukan")
+}
+
+// ─── Profil Profesi ───────────────────────────────────────────────────────────
+
+enum ProfilKategori {
+  TEKNOLOGI
+  KESEHATAN
+  PENDIDIKAN
+  HUKUM
+  KEUANGAN
+  TEKNIK
+  SENI_KREATIF
+  KULINER
+  PERDAGANGAN
+  LAINNYA
+}
+
+model ProfilProfesi {
+  id          String         @id @default(uuid())
+  userId      String         @unique @map("user_id")
+  category    ProfilKategori
+  jobTitle    String         @map("job_title")
+  skills      String
+  bio         String?
+  whatsapp    String?
+  isPublished Boolean        @default(true) @map("is_published")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profil_profesi")
 }

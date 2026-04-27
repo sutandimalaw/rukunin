@@ -4,13 +4,18 @@ import * as React from "react"
 import { useAuth } from "@/provider/auth-provider"
 import {
   Users,
-  GalleryVerticalEnd,
+  Building2,
   CircleDollarSign,
   Bell,
   FileTextIcon,
   House,
-  UserCheck,
   CalendarHeart,
+  ClipboardList,
+  Store,
+  Warehouse,
+  Award,
+  Shield,
+  MessageSquare,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -29,7 +34,7 @@ const data = {
   teams: [
     {
       name: "Rukunin",
-      logo: GalleryVerticalEnd,
+      logo: Building2,
       plan: "Web RT",
     },
   ],
@@ -77,14 +82,52 @@ const data = {
       icon: CalendarHeart,
     },
     {
+      title: "Layanan Warga",
+      url: "#",
+      icon: ClipboardList,
+      items: [
+        { title: "Layanan Surat", url: "/layanan-warga" },
+        { title: "Polling Warga", url: "/polling" },
+        { title: "Kontak Darurat", url: "/kontak-darurat" },
+      ],
+    },
+    {
+      title: "Inventaris RT",
+      url: "/inventaris",
+      icon: Warehouse,
+    },
+    {
+      title: "Keamanan",
+      url: "/keamanan",
+      icon: Shield,
+    },
+    {
+      title: "Direktori Warga & UMKM",
+      url: "#",
+      icon: Store,
+      items: [
+        { title: "UMKM Warga", url: "/umkm-warga" },
+        { title: "Penyedia Jasa", url: "/penyedia-jasa" },
+      ],
+    },
+    {
+      title: "Saran & Masukan",
+      url: "/saran-masukan",
+      icon: MessageSquare,
+    },
+    {
+      title: "Organisasi",
+      url: "#",
+      icon: Award,
+      items: [
+        { title: "Pengurus RT", url: "/pengurus" },
+        { title: "Kelola Pengguna", url: "/kelola-pengguna" },
+      ],
+    },
+    {
       title: "Laporan",
       url: "/report",
       icon: FileTextIcon,
-    },
-    {
-      title: "Kelola Pengguna",
-      url: "/kelola-pengguna",
-      icon: UserCheck,
     },
   ],
   navMainWarga: [
@@ -103,6 +146,47 @@ const data = {
       title: "Kegiatan",
       url: "/portal/kegiatan",
       icon: CalendarHeart,
+    },
+    {
+      title: "Layanan",
+      url: "#",
+      icon: ClipboardList,
+      items: [
+        { title: "Layanan Surat", url: "/portal/layanan" },
+        { title: "Polling", url: "/portal/polling" },
+        { title: "Kontak Darurat", url: "/portal/kontak-darurat" },
+      ],
+    },
+    {
+      title: "Inventaris RT",
+      url: "/portal/inventaris",
+      icon: Warehouse,
+    },
+    {
+      title: "Keamanan",
+      url: "/portal/keamanan",
+      icon: Shield,
+    },
+    {
+      title: "Direktori Warga & UMKM",
+      url: "#",
+      icon: Store,
+      items: [
+        { title: "Katalog UMKM", url: "/portal/umkm" },
+        { title: "Kelola Usaha Saya", url: "/portal/umkm/kelola" },
+        { title: "Penyedia Jasa", url: "/portal/penyedia-jasa" },
+        { title: "Rekomendasi Saya", url: "/portal/penyedia-jasa/saya" },
+      ],
+    },
+    {
+      title: "Saran & Masukan",
+      url: "/portal/saran-masukan",
+      icon: MessageSquare,
+    },
+    {
+      title: "Pengurus RT",
+      url: "/portal/pengurus",
+      icon: Award,
     },
   ],
 }

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rukunin — Business Plan</title>
+  <style>
+    @page {
+      margin: 20mm 18mm;
+      size: A4;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #1a1a2e;
+      line-height: 1.6;
+      font-size: 11pt;
+      background: #fff;
+    }
+
+    /* Cover Page */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+      page-break-after: always;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      color: #fff;
+      padding: 40px;
+    }
+
+    .cover-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 32px;
+      letter-spacing: -2px;
+    }
+
+    .cover h1 {
+      font-size: 42pt;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .cover .subtitle {
+      font-size: 16pt;
+      color: #93c5fd;
+      margin-bottom: 48px;
+      font-weight: 400;
+    }
+
+    .cover .meta {
+      font-size: 11pt;
+      color: #94a3b8;
+      line-height: 2;
+    }
+
+    .cover .divider {
+      width: 60px;
+      height: 3px;
+      background: #3b82f6;
+      margin: 32px auto;
+      border-radius: 2px;
+    }
+
+    .cover .badge {
+      display: inline-block;
+      padding: 6px 20px;
+      border: 1px solid #3b82f6;
+      border-radius: 100px;
+      color: #93c5fd;
+      font-size: 10pt;
+      margin-top: 24px;
+    }
+
+    /* Content */
+    .content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h2 {
+      font-size: 18pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #3b82f6;
+      page-break-after: avoid;
+    }
+
+    h2 .num {
+      color: #3b82f6;
+      margin-right: 8px;
+    }
+
+    h3 {
+      font-size: 13pt;
+      font-weight: 600;
+      color: #1e3a5f;
+      margin-top: 24px;
+      margin-bottom: 10px;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin-bottom: 12px;
+      text-align: justify;
+    }
+
+    .lead {
+      font-size: 12pt;
+      color: #475569;
+      line-height: 1.7;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 10pt;
+    }
+
+    thead th {
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    tbody tr:hover {
+      background: #eff6ff;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .font-bold {
+      font-weight: 700;
+    }
+
+    .text-green { color: #16a34a; }
+    .text-red { color: #dc2626; }
+    .text-blue { color: #2563eb; }
+    .text-muted { color: #64748b; }
+
+    /* Highlight boxes */
+    .box {
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+
+    .box-blue {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .box-green {
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+    }
+
+    .box-yellow {
+      background: #fefce8;
+      border-left: 4px solid #eab308;
+    }
+
+    .box-title {
+      font-weight: 700;
+      font-size: 11pt;
+      margin-bottom: 4px;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      margin: 20px 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: #cbd5e1;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 24px;
+      page-break-inside: avoid;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 6px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #3b82f6;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px #3b82f6;
+    }
+
+    .timeline-item.done::before {
+      background: #22c55e;
+      box-shadow: 0 0 0 2px #22c55e;
+    }
+
+    .timeline-date {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #3b82f6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .timeline-title {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 2px 0 6px;
+    }
+
+    .timeline-desc {
+      font-size: 10pt;
+      color: #475569;
+    }
+
+    /* KPI checklist */
+    .kpi-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+
+    .kpi-list li {
+      padding: 4px 0 4px 24px;
+      position: relative;
+      font-size: 10pt;
+    }
+
+    .kpi-list li::before {
+      content: '☐';
+      position: absolute;
+      left: 0;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 140px;
+      padding: 16px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 20pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .stat-label {
+      font-size: 9pt;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* Page breaks */
+    .page-break {
+      page-break-before: always;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 9pt;
+    }
+
+    /* Print adjustments */
+    @media print {
+      body { font-size: 10pt; }
+      .cover { min-height: 100vh; }
+      .content { padding: 0; max-width: 100%; }
+      h2 { margin-top: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover">
+    <div class="cover-logo">R</div>
+    <h1>Rukunin</h1>
+    <p class="subtitle">Sistem Manajemen RT Digital</p>
+    <div class="divider"></div>
+    <p class="meta">
+      Business Plan<br>
+      Versi 1.0 — April 2026
+    </p>
+    <div class="badge">Confidential</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- 1. RINGKASAN -->
+    <h2><span class="num">01</span> Ringkasan Eksekutif</h2>
+    <p class="lead">
+      <strong>Rukunin</strong> adalah aplikasi web untuk digitalisasi administrasi RT/RW di Indonesia. 
+      Mencakup manajemen kependudukan, keuangan, iuran warga, pengumuman, kegiatan komunitas, 
+      layanan warga, inventaris, dan portal self-service — semua dalam satu platform.
+    </p>
+
+    <div class="box box-blue">
+      <div class="box-title">Posisi Saat Ini</div>
+      Produk sudah ~85% feature-complete dengan 16 modul aktif. Siap pilot project.
+    </div>
+
+    <h3>Tujuan</h3>
+    <table>
+      <thead>
+        <tr><th width="30%">Aspek</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Portfolio</strong></td><td>Bukti nyata kemampuan full-stack development production-grade</td></tr>
+        <tr><td><strong>Side Income</strong></td><td>Passive income dari langganan bulanan RT</td></tr>
+        <tr><td><strong>Fondasi</strong></td><td>Codebase & pengalaman untuk project IT selanjutnya</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 2. PRODUK -->
+    <h2><span class="num">02</span> Produk</h2>
+    <h3>16 Modul Aktif</h3>
+    <table>
+      <thead>
+        <tr><th width="5%">#</th><th width="30%">Modul</th><th>Deskripsi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Auth & User Management</td><td>Register, login, JWT, approval workflow</td></tr>
+        <tr><td>2</td><td>Data Kependudukan</td><td>CRUD warga, search, summary statistik</td></tr>
+        <tr><td>3</td><td>Kartu Keluarga</td><td>CRUD household, member management</td></tr>
+        <tr><td>4</td><td>Keuangan</td><td>Pemasukan/pengeluaran, running balance</td></tr>
+        <tr><td>5</td><td>Iuran Warga</td><td>Generate tagihan, bayar, batch, laporan nunggak</td></tr>
+        <tr><td>6</td><td>Pengumuman</td><td>CRUD, kategori, published toggle</td></tr>
+        <tr><td>7</td><td>Kegiatan Warga</td><td>Voting → schedule → RSVP → complete</td></tr>
+        <tr><td>8</td><td>Layanan Warga</td><td>Surat, laporan kerusakan, komplain, tracking</td></tr>
+        <tr><td>9</td><td>Laporan</td><td>Keuangan (date range) + kependudukan</td></tr>
+        <tr><td>10</td><td>Kelola Pengguna</td><td>Approve/reject registrasi warga</td></tr>
+        <tr><td>11</td><td>Profile & Account</td><td>Edit profil, password change</td></tr>
+        <tr><td>12</td><td>Dashboard Admin</td><td>Real-time stats (warga, keuangan, iuran)</td></tr>
+        <tr><td>13</td><td>Portal Warga</td><td>Self-service: cek iuran, pengumuman, layanan</td></tr>
+        <tr><td>14</td><td>Pengurus RT</td><td>Manajemen struktur kepengurusan</td></tr>
+        <tr><td>15</td><td>Penyedia Jasa</td><td>Direktori jasa warga + review</td></tr>
+        <tr><td>16</td><td>Inventaris</td><td>Tracking aset RT + peminjaman</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Tech Stack</h3>
+    <table>
+      <thead>
+        <tr><th width="25%">Layer</th><th>Teknologi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Frontend</td><td>Next.js 15, React Query, TanStack Form/Table, Tailwind CSS, shadcn/ui</td></tr>
+        <tr><td>Backend</td><td>NestJS 11, Prisma ORM, Passport.js JWT</td></tr>
+        <tr><td>Database</td><td>PostgreSQL 16</td></tr>
+        <tr><td>Server</td><td>Ubuntu 24.04, Nginx, PM2, Let's Encrypt SSL</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Value Proposition untuk Pengurus RT</h3>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" style="font-size:16pt;">⏱️</div>
+        <div class="stat-label">Hemat Waktu</div>
+        <div style="font-size:9pt;color:#475569;margin-top:4px;">Pencatatan keuangan & iuran otomatis</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="font-size:16pt;">📊</div>
+        <div class="stat-label">Transparan</div>
+        <div style="font-size:9pt;color:#475569;margin-top:4px;">Warga cek tagihan sendiri via HP</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="font-size:16pt;">📁</div>
+        <div class="stat-label">Terorganisir</div>
+        <div style="font-size:9pt;color:#475569;margin-top:4px;">Semua data di satu tempat</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="font-size:16pt;">📱</div>
+        <div class="stat-label">Akses 24/7</div>
+        <div style="font-size:9pt;color:#475569;margin-top:4px;">Dari HP/laptop kapan saja</div>
+      </div>
+    </div>
+
+    <!-- 3. TARGET MARKET -->
+    <div class="page-break"></div>
+    <h2><span class="num">03</span> Target Market</h2>
+
+    <h3>Pilot Customer</h3>
+    <table>
+      <thead>
+        <tr><th width="35%">Item</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Target</td><td><strong>RT 4</strong></td></tr>
+        <tr><td>Jumlah warga</td><td>~200 jiwa</td></tr>
+        <tr><td>Jumlah KK</td><td>~50-60</td></tr>
+        <tr><td>Harga langganan</td><td><strong>Rp 150.000/bulan</strong></td></tr>
+        <tr><td>Sumber dana</td><td>Kas RT (pos administrasi)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Ekspansi Market</h3>
+    <table>
+      <thead>
+        <tr><th>Level</th><th>Target</th><th>Estimasi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>RT satu RW</td><td>RT tetangga di RW yang sama</td><td>5-10 RT</td></tr>
+        <tr><td>Antar-RW</td><td>RW lain di kelurahan</td><td>10-30 RT</td></tr>
+        <tr><td>Antar-Kelurahan</td><td>Kelurahan sekitar</td><td>30-100 RT</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 4. MODEL BISNIS -->
+    <h2><span class="num">04</span> Model Bisnis</h2>
+
+    <div class="box box-green">
+      <div class="box-title">Langganan Bulanan — Rp 150.000/bulan</div>
+      Satu harga, semua fitur, semua ukuran RT. Simple.
+    </div>
+
+    <h3>Revenue Tambahan (Opsional, Nanti)</h3>
+    <table>
+      <thead>
+        <tr><th>Item</th><th>Harga</th><th>Kapan</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Setup & input data awal</td><td>Rp 500.000 (one-time)</td><td>Jika diminta</td></tr>
+        <tr><td>Training pengurus RT</td><td>Rp 200.000/sesi</td><td>Jika diminta</td></tr>
+        <tr><td>WhatsApp blast integration</td><td>Rp 100.000/bln</td><td>Fase 3+</td></tr>
+        <tr><td>Laporan tahunan PDF</td><td>Rp 200.000/tahun</td><td>Fase 2+</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Positioning</h3>
+    <p>Rukunin diposisikan sebagai <strong>portfolio project</strong> dan <strong>side income</strong>, 
+    bukan sumber pendapatan utama. Menjadi fondasi skill & codebase untuk project IT yang lebih besar ke depan.</p>
+
+    <!-- 5. INFRASTRUKTUR -->
+    <h2><span class="num">05</span> Infrastruktur & Biaya</h2>
+
+    <h3>Biaya Operasional Bulanan</h3>
+    <table>
+      <thead>
+        <tr><th>Komponen</th><th>Provider</th><th class="text-right">Biaya/Bulan</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>VPS Server</td><td>IDCloudHost Basic (2 Core, 2GB RAM, 20GB NVMe)</td><td class="text-right">Rp 87.000</td></tr>
+        <tr><td>Domain</td><td>rukunin.my.id</td><td class="text-right">~Rp 1.250</td></tr>
+        <tr><td>SSL</td><td>Let's Encrypt</td><td class="text-right">Rp 0</td></tr>
+        <tr><td>Monitoring</td><td>UptimeRobot</td><td class="text-right">Rp 0</td></tr>
+        <tr><td>Email</td><td>Resend free tier</td><td class="text-right">Rp 0</td></tr>
+        <tr><td>Repository</td><td>GitHub</td><td class="text-right">Rp 0</td></tr>
+        <tr class="font-bold"><td colspan="2">Total Operasional</td><td class="text-right">Rp 88.250</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Unit Economics</h3>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value text-blue">41%</div>
+        <div class="stat-label">Margin 1 RT</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value text-blue">80%</div>
+        <div class="stat-label">Margin 3 RT</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value text-blue">94%</div>
+        <div class="stat-label">Margin 10 RT</div>
+      </div>
+    </div>
+    <p class="text-muted" style="font-size:9pt;">*VPS cost fixed — setiap RT tambahan = hampir 100% profit karena biaya marginal per RT mendekati nol.</p>
+
+    <!-- 6. TIMELINE -->
+    <div class="page-break"></div>
+    <h2><span class="num">06</span> Timeline & Milestone</h2>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">Fase 0 — April 2026 (Minggu 1-2)</div>
+        <div class="timeline-title">Finalisasi Produk</div>
+        <div class="timeline-desc">
+          Selesaikan Dashboard Admin dinamis dan Portal Warga enhancement. 
+          Testing manual seluruh flow admin + warga. Fix bugs.
+        </div>
+        <ul class="kpi-list">
+          <li>Produk siap demo tanpa bug kritis</li>
+          <li>Semua 16 modul berfungsi end-to-end</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Fase 1 — Mei 2026 (Minggu 3-6)</div>
+        <div class="timeline-title">Deployment & Pilot RT 4</div>
+        <div class="timeline-desc">
+          Beli domain & VPS. Deploy production. Setup akun admin RT 4. 
+          Input data awal warga. Training pengurus. Sosialisasi ke warga.
+        </div>
+        <ul class="kpi-list">
+          <li>Sistem online & accessible 24/7</li>
+          <li>Pengurus RT bisa input/edit data warga</li>
+          <li>Minimal 20% warga register di portal</li>
+          <li>Iuran bulan pertama di-generate via sistem</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Fase 2 — Juni-Juli 2026 (Minggu 7-14)</div>
+        <div class="timeline-title">Stabilisasi & Feedback</div>
+        <div class="timeline-desc">
+          Monitor penggunaan. Fix bugs berdasarkan feedback. Setup backup otomatis. 
+          Kumpulkan testimoni dari pengurus RT 4.
+        </div>
+        <ul class="kpi-list">
+          <li>Uptime >99% selama 2 bulan</li>
+          <li>Minimal 50% warga aktif di portal</li>
+          <li>1 testimoni tertulis dari pengurus RT 4</li>
+          <li>Zero data loss / security incident</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Fase 3 — Agustus-Oktober 2026 (Minggu 15-26)</div>
+        <div class="timeline-title">Ekspansi & Portfolio</div>
+        <div class="timeline-desc">
+          Buat landing page marketing. Approach RT tetangga via referral. 
+          Update portfolio online (LinkedIn, CV). Cari project IT berikutnya.
+        </div>
+        <ul class="kpi-list">
+          <li>Landing page live di rukunin.my.id</li>
+          <li>Rukunin di-showcase di LinkedIn/portfolio</li>
+          <li>1-2 RT tambahan (nice to have)</li>
+          <li>Identifikasi project IT berikutnya</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Fase 4 — November 2026+</div>
+        <div class="timeline-title">Passive Mode</div>
+        <div class="timeline-desc">
+          Maintenance rutin (~2-4 jam/minggu). Terima RT baru organic. 
+          Fokus ke project lain. Rukunin berjalan autopilot.
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. FINANCIAL PROJECTION -->
+    <div class="page-break"></div>
+    <h2><span class="num">07</span> Proyeksi Keuangan (12 Bulan)</h2>
+
+    <h3>Skenario Konservatif — 1 RT</h3>
+    <table>
+      <thead>
+        <tr><th>Bulan</th><th class="text-center">RT Aktif</th><th class="text-right">Revenue</th><th class="text-right">Biaya</th><th class="text-right">Net</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Mei (setup)</td><td class="text-center">0</td><td class="text-right">Rp 0</td><td class="text-right">Rp 88.250</td><td class="text-right text-red">-Rp 88.250</td></tr>
+        <tr><td>Juni — April</td><td class="text-center">1</td><td class="text-right">Rp 150.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 61.750</td></tr>
+        <tr class="font-bold"><td>Total Tahun 1</td><td></td><td class="text-right">Rp 1.650.000</td><td class="text-right">Rp 1.059.000</td><td class="text-right text-green">+Rp 591.000</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Skenario Moderat — 3 RT</h3>
+    <table>
+      <thead>
+        <tr><th>Periode</th><th class="text-center">RT Aktif</th><th class="text-right">Revenue</th><th class="text-right">Biaya</th><th class="text-right">Net/Bulan</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Mei (setup)</td><td class="text-center">0</td><td class="text-right">Rp 0</td><td class="text-right">Rp 88.250</td><td class="text-right text-red">-Rp 88.250</td></tr>
+        <tr><td>Juni — Agustus</td><td class="text-center">1</td><td class="text-right">Rp 150.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 61.750</td></tr>
+        <tr><td>September — Desember</td><td class="text-center">2</td><td class="text-right">Rp 300.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 211.750</td></tr>
+        <tr><td>Januari — April</td><td class="text-center">3</td><td class="text-right">Rp 450.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 361.750</td></tr>
+        <tr class="font-bold"><td>Total Tahun 1</td><td></td><td class="text-right">Rp 3.150.000</td><td class="text-right">Rp 1.059.000</td><td class="text-right text-green">+Rp 2.091.000</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Skenario Optimis — 5 RT</h3>
+    <table>
+      <thead>
+        <tr><th>Periode</th><th class="text-center">RT Aktif</th><th class="text-right">Revenue</th><th class="text-right">Biaya</th><th class="text-right">Net/Bulan</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Mei (setup)</td><td class="text-center">0</td><td class="text-right">Rp 0</td><td class="text-right">Rp 88.250</td><td class="text-right text-red">-Rp 88.250</td></tr>
+        <tr><td>Juni — Juli</td><td class="text-center">1</td><td class="text-right">Rp 150.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 61.750</td></tr>
+        <tr><td>Agustus — Oktober</td><td class="text-center">2-3</td><td class="text-right">Rp 300.000-450.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 211.750-361.750</td></tr>
+        <tr><td>November — Januari</td><td class="text-center">4</td><td class="text-right">Rp 600.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 511.750</td></tr>
+        <tr><td>Februari — April</td><td class="text-center">5</td><td class="text-right">Rp 750.000</td><td class="text-right">Rp 88.250</td><td class="text-right text-green">+Rp 661.750</td></tr>
+        <tr class="font-bold"><td>Total Tahun 1</td><td></td><td class="text-right">Rp 4.800.000</td><td class="text-right">Rp 1.059.000</td><td class="text-right text-green">+Rp 3.741.000</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 8. RISIKO -->
+    <div class="page-break"></div>
+    <h2><span class="num">08</span> Risiko & Mitigasi</h2>
+    <table>
+      <thead>
+        <tr><th width="25%">Risiko</th><th width="20%">Dampak</th><th>Mitigasi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>RT 4 berhenti langganan</td><td>Revenue = 0</td><td>Tunjukkan value terus, kunci kontrak 6 bulan</td></tr>
+        <tr><td>VPS down</td><td>Warga tak bisa akses</td><td>UptimeRobot alert, quick restart procedure</td></tr>
+        <tr><td>Data hilang</td><td>Kehilangan semua data RT</td><td>Daily backup pg_dump, simpan di cloud gratis</td></tr>
+        <tr><td>Security breach</td><td>Reputasi rusak</td><td>JWT best practices, firewall UFW, update rutin</td></tr>
+        <tr><td>Warga tidak pakai portal</td><td>Fitur portal terbuang</td><td>Fokus admin tools dulu, portal sebagai bonus</td></tr>
+        <tr><td>Tidak dapat RT baru</td><td>Income minim</td><td>Tidak masalah — ini side income + portfolio</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 9. SUCCESS METRICS -->
+    <h2><span class="num">09</span> Success Metrics</h2>
+
+    <h3>Produk</h3>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">>99%</div>
+        <div class="stat-label">Uptime</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">0</div>
+        <div class="stat-label">Data Loss</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">&lt;2s</div>
+        <div class="stat-label">Response Time</div>
+      </div>
+    </div>
+
+    <h3>Bisnis — Tahun 1</h3>
+    <ul class="kpi-list">
+      <li>Minimal 1 RT aktif (RT 4)</li>
+      <li>Break-even di bulan ke-2</li>
+      <li>Portfolio live & di-showcase</li>
+    </ul>
+
+    <h3>Bonus (Nice-to-Have)</h3>
+    <ul class="kpi-list">
+      <li>3+ RT aktif</li>
+      <li>Side income >Rp 300.000/bulan</li>
+      <li>Referral organik dari pengurus RT</li>
+    </ul>
+
+    <!-- 10. EXIT STRATEGY -->
+    <h2><span class="num">10</span> Exit Strategy</h2>
+    <table>
+      <thead>
+        <tr><th width="30%">Skenario</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Berjalan baik, growing</td><td>Terus jalankan, tambah RT organik</td></tr>
+        <tr><td>Flat di 1-2 RT</td><td>Autopilot, fokus project lain — tetap jadi portfolio</td></tr>
+        <tr><td>Tidak ada user</td><td>Matikan VPS, hemat biaya — kode tetap jadi portfolio di GitHub</td></tr>
+        <tr><td>Ada yang mau akuisisi</td><td>Jual codebase + customer base (harga nego)</td></tr>
+      </tbody>
+    </table>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <p>Rukunin Business Plan v1.0 — April 2026</p>
+      <p>Dokumen ini bersifat confidential dan akan di-update sesuai perkembangan.</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
