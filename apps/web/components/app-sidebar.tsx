@@ -38,7 +38,71 @@ const data = {
       plan: "Web RT",
     },
   ],
-  navMainAdmin: [
+  navMainWarga: [
+    {
+      title: "Portal",
+      url: "/portal",
+      icon: House,
+      isActive: true,
+    },
+    {
+      title: "Pengumuman",
+      url: "/portal/pengumuman",
+      icon: Bell,
+    },
+    {
+      title: "Kegiatan",
+      url: "/portal/kegiatan",
+      icon: CalendarHeart,
+    },
+    {
+      title: "Layanan",
+      url: "#",
+      icon: ClipboardList,
+      items: [
+        { title: "Layanan Perizinan", url: "/portal/layanan" },
+        { title: "Polling", url: "/portal/polling" },
+        { title: "Kontak Darurat", url: "/portal/kontak-darurat" },
+      ],
+    },
+    {
+      title: "Inventaris RT",
+      url: "/portal/inventaris",
+      icon: Warehouse,
+    },
+    {
+      title: "Keamanan",
+      url: "/portal/keamanan",
+      icon: Shield,
+    },
+    // {
+    //   title: "Direktori Warga & UMKM",
+    //   url: "#",
+    //   icon: Store,
+    //   items: [
+    //     { title: "Katalog UMKM", url: "/portal/umkm" },
+    //     { title: "Kelola Usaha Saya", url: "/portal/umkm/kelola" },
+    //     { title: "Penyedia Jasa", url: "/portal/penyedia-jasa" },
+    //     { title: "Rekomendasi Saya", url: "/portal/penyedia-jasa/saya" },
+    //   ],
+    // },
+    {
+      title: "Saran & Masukan",
+      url: "/portal/saran-masukan",
+      icon: MessageSquare,
+    },
+    {
+      title: "Pengurus RT",
+      url: "/portal/pengurus",
+      icon: Award,
+    },
+  ],
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  const navMainAdmin = [
     {
       title: "Dashboard",
       url: "/",
@@ -51,14 +115,8 @@ const data = {
       icon: Users,
       isActive: true,
       items: [
-        {
-          title: "Data Warga",
-          url: "/residents",
-        },
-        {
-          title: "Kartu Keluarga",
-          url: "/kartu-keluarga",
-        },
+        { title: "Data Warga", url: "/residents" },
+        { title: "Kartu Keluarga", url: "/kartu-keluarga" },
       ],
     },
     {
@@ -86,7 +144,7 @@ const data = {
       url: "#",
       icon: ClipboardList,
       items: [
-        { title: "Layanan Surat", url: "/layanan-warga" },
+        { title: "Layanan Perizinan", url: "/layanan-warga" },
         { title: "Polling Warga", url: "/polling" },
         { title: "Kontak Darurat", url: "/kontak-darurat" },
       ],
@@ -102,15 +160,6 @@ const data = {
       icon: Shield,
     },
     {
-      title: "Direktori Warga & UMKM",
-      url: "#",
-      icon: Store,
-      items: [
-        { title: "UMKM Warga", url: "/umkm-warga" },
-        { title: "Penyedia Jasa", url: "/penyedia-jasa" },
-      ],
-    },
-    {
       title: "Saran & Masukan",
       url: "/saran-masukan",
       icon: MessageSquare,
@@ -121,80 +170,12 @@ const data = {
       icon: Award,
       items: [
         { title: "Pengurus RT", url: "/pengurus" },
-        { title: "Kelola Pengguna", url: "/kelola-pengguna" },
+        ...(user?.role === 'SUPER_ADMIN' ? [{ title: "Kelola Pengguna", url: "/kelola-pengguna" }] : []),
       ],
     },
-    {
-      title: "Laporan",
-      url: "/report",
-      icon: FileTextIcon,
-    },
-  ],
-  navMainWarga: [
-    {
-      title: "Portal",
-      url: "/portal",
-      icon: House,
-      isActive: true,
-    },
-    {
-      title: "Pengumuman",
-      url: "/portal/pengumuman",
-      icon: Bell,
-    },
-    {
-      title: "Kegiatan",
-      url: "/portal/kegiatan",
-      icon: CalendarHeart,
-    },
-    {
-      title: "Layanan",
-      url: "#",
-      icon: ClipboardList,
-      items: [
-        { title: "Layanan Surat", url: "/portal/layanan" },
-        { title: "Polling", url: "/portal/polling" },
-        { title: "Kontak Darurat", url: "/portal/kontak-darurat" },
-      ],
-    },
-    {
-      title: "Inventaris RT",
-      url: "/portal/inventaris",
-      icon: Warehouse,
-    },
-    {
-      title: "Keamanan",
-      url: "/portal/keamanan",
-      icon: Shield,
-    },
-    {
-      title: "Direktori Warga & UMKM",
-      url: "#",
-      icon: Store,
-      items: [
-        { title: "Katalog UMKM", url: "/portal/umkm" },
-        { title: "Kelola Usaha Saya", url: "/portal/umkm/kelola" },
-        { title: "Penyedia Jasa", url: "/portal/penyedia-jasa" },
-        { title: "Rekomendasi Saya", url: "/portal/penyedia-jasa/saya" },
-      ],
-    },
-    {
-      title: "Saran & Masukan",
-      url: "/portal/saran-masukan",
-      icon: MessageSquare,
-    },
-    {
-      title: "Pengurus RT",
-      url: "/portal/pengurus",
-      icon: Award,
-    },
-  ],
-}
+  ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth()
-
-  const navItems = user?.role === 'WARGA' ? data.navMainWarga : data.navMainAdmin
+  const navItems = user?.role === 'WARGA' ? data.navMainWarga : navMainAdmin
 
   return (
     <aside>

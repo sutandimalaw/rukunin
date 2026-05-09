@@ -13,13 +13,17 @@ const PUBLIC_PATHS = [
   '/landing',
 ]
 
-// Halaman yang hanya boleh diakses ADMIN
+// Halaman yang hanya boleh diakses ADMIN atau SUPER_ADMIN
 const ADMIN_ONLY_PATHS = [
   '/finance',
   '/residents',
   '/iuran-warga',
   '/announcements',
-  '/report',
+  '/kelola-pengguna',
+]
+
+// Halaman yang hanya boleh diakses SUPER_ADMIN
+const SUPER_ADMIN_ONLY_PATHS = [
   '/kelola-pengguna',
 ]
 
@@ -48,6 +52,11 @@ export function middleware(request: NextRequest) {
     // Warga mencoba akses halaman admin → redirect ke portal
     if (role === 'WARGA' && ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
       return NextResponse.redirect(new URL('/portal', request.url))
+    }
+
+    // Admin biasa mencoba akses halaman SUPER_ADMIN only → redirect ke home
+    if (role === 'ADMIN' && SUPER_ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+      return NextResponse.redirect(new URL('/', request.url))
     }
 
     // Admin mencoba akses halaman portal → redirect ke home

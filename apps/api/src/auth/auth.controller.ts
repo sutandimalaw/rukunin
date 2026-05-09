@@ -10,7 +10,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  ForbiddenException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
@@ -21,6 +20,8 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -95,41 +96,35 @@ export class AuthController {
     return this.authService.getProfile(user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN')
   @Get('admin/pending-users')
   @ApiBearerAuth()
-  async getPendingUsers(@CurrentUser() user: { role: string }) {
-    if (user.role !== 'ADMIN') throw new ForbiddenException();
+  async getPendingUsers() {
     return this.authService.getPendingUsers();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN')
   @Get('admin/active-users')
   @ApiBearerAuth()
-  async getActiveUsers(@CurrentUser() user: { role: string }) {
-    if (user.role !== 'ADMIN') throw new ForbiddenException();
+  async getActiveUsers() {
     return this.authService.getActiveUsers();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN')
   @Patch('admin/users/:id/approve')
   @ApiBearerAuth()
-  async approveUser(
-    @Param('id') id: string,
-    @CurrentUser() user: { role: string },
-  ) {
-    if (user.role !== 'ADMIN') throw new ForbiddenException();
+  async approveUser(@Param('id') id: string) {
     return this.authService.approveUser(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN')
   @Patch('admin/users/:id/reject')
   @ApiBearerAuth()
-  async rejectUser(
-    @Param('id') id: string,
-    @CurrentUser() user: { role: string },
-  ) {
-    if (user.role !== 'ADMIN') throw new ForbiddenException();
+  async rejectUser(@Param('id') id: string) {
     return this.authService.rejectUser(id);
   }
 

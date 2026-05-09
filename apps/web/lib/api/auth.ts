@@ -3,7 +3,7 @@ import { apiFetch } from './client';
 export interface AuthUser {
   id: string;
   email: string;
-  role: 'ADMIN' | 'WARGA';
+  role: 'ADMIN' | 'SUPER_ADMIN' | 'WARGA';
   status: 'PENDING' | 'ACTIVE' | 'REJECTED';
   isProfileComplete: boolean;
   profile: {
@@ -43,7 +43,7 @@ export interface ActiveUser {
 }
 
 export const authApi = {
-  register: (email: string, password: string, role?: 'ADMIN' | 'WARGA') =>
+  register: (email: string, password: string, role?: 'ADMIN' | 'SUPER_ADMIN' | 'WARGA') =>
     apiFetch<RegisterResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password, role }),

@@ -55,6 +55,7 @@ import {
   useRejectPay,
   useGetHouseholdDues,
 } from './hooks/useDues'
+import { useAuth } from '@/provider/auth-provider'
 
 function formatRupiah(amount: number | string) {
   return new Intl.NumberFormat('id-ID', {
@@ -92,6 +93,8 @@ function getPeriodOptions() {
 }
 
 export default function IuranWargaPage() {
+  const { user } = useAuth()
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN'
   const [period, setPeriod] = useState(getCurrentPeriod())
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [generateOpen, setGenerateOpen] = useState(false)
@@ -232,9 +235,11 @@ export default function IuranWargaPage() {
                   </Select>
                 </div>
               </div>
-              <Button onClick={() => setGenerateOpen(true)}>
-                Generate Tagihan
-              </Button>
+              {isSuperAdmin && (
+                <Button onClick={() => setGenerateOpen(true)}>
+                  Generate Tagihan
+                </Button>
+              )}
             </div>
 
             {/* Summary cards */}
@@ -361,41 +366,43 @@ export default function IuranWargaPage() {
                             {row.notes ?? '-'}
                           </TableCell>
                           <TableCell className="text-right">
-                            {row.status === 'UNPAID' ? (
-                              <Button
-                                size="sm"
-                                onClick={() => payMutation.mutate({ id: row.id })}
-                                disabled={payMutation.isPending}
-                              >
-                                Tandai Lunas
-                              </Button>
-                            ) : row.status === 'PENDING' ? (
-                              <div className="flex justify-end gap-2">
+                            {isSuperAdmin && (
+                              row.status === 'UNPAID' ? (
                                 <Button
                                   size="sm"
                                   onClick={() => payMutation.mutate({ id: row.id })}
                                   disabled={payMutation.isPending}
                                 >
-                                  Konfirmasi
+                                  Tandai Lunas
                                 </Button>
+                              ) : row.status === 'PENDING' ? (
+                                <div className="flex justify-end gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => payMutation.mutate({ id: row.id })}
+                                    disabled={payMutation.isPending}
+                                  >
+                                    Konfirmasi
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => rejectPayMutation.mutate(row.id)}
+                                    disabled={rejectPayMutation.isPending}
+                                  >
+                                    Tolak
+                                  </Button>
+                                </div>
+                              ) : (
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => rejectPayMutation.mutate(row.id)}
-                                  disabled={rejectPayMutation.isPending}
+                                  onClick={() => unpayMutation.mutate(row.id)}
+                                  disabled={unpayMutation.isPending}
                                 >
-                                  Tolak
+                                  Batalkan
                                 </Button>
-                              </div>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => unpayMutation.mutate(row.id)}
-                                disabled={unpayMutation.isPending}
-                              >
-                                Batalkan
-                              </Button>
+                              )
                             )}
                           </TableCell>
                         </TableRow>
@@ -503,31 +510,33 @@ export default function IuranWargaPage() {
                             {formatRupiah(row.totalAmount)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() =>
-                                  batchPayMutation.mutate({
-                                    ids: row.unpaidPeriods.map((p) => p.id),
-                                  })
-                                }
-                                disabled={batchPayMutation.isPending}
-                              >
-                                Lunasi Semua
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedHousehold(row)
-                                  setSelectedBillingIds(row.unpaidPeriods.map((p) => p.id))
-                                  setBatchPayNotes('')
-                                  setBatchPayOpen(true)
-                                }}
-                              >
-                                Pilih Bulan
-                              </Button>
-                            </div>
+                            {isSuperAdmin && (
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    batchPayMutation.mutate({
+                                      ids: row.unpaidPeriods.map((p) => p.id),
+                                    })
+                                  }
+                                  disabled={batchPayMutation.isPending}
+                                >
+                                  Lunasi Semua
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedHousehold(row)
+                                    setSelectedBillingIds(row.unpaidPeriods.map((p) => p.id))
+                                    setBatchPayNotes('')
+                                    setBatchPayOpen(true)
+                                  }}
+                                >
+                                  Pilih Bulan
+                                </Button>
+                              </div>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}

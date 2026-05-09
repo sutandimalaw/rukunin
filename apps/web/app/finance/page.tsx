@@ -13,6 +13,7 @@ import { useCreateTransaction } from './hooks/useCreateTransaction'
 import FinanceSummary from './components/FinanceSummary'
 import CreateTransactionModal from './components/CreateTransactionModal'
 import Filter, { type FilterParams } from './components/Filter'
+import { useAuth } from '@/provider/auth-provider'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -30,6 +31,9 @@ const FinancePage = () => {
   const [submitError, setSubmitError] = React.useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = React.useState(false)
   const [filters, setFilters] = useState<FilterParams>({})
+
+  const { user } = useAuth()
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN'
 
   const defaultValues: z.input<typeof transactionSchema> = {
     type: '',
@@ -101,21 +105,25 @@ const FinancePage = () => {
             onReset={() => setFilters({})}
           />
         </div>
-        <Button className="cursor-pointer" onClick={() => setOpen(true)}>
-          Tambah Transaksi
-        </Button>
+        {isSuperAdmin && (
+          <Button className="cursor-pointer" onClick={() => setOpen(true)}>
+            Tambah Transaksi
+          </Button>
+        )}
       </div>
 
       <TableTransaction data={dataTransaction?.data} isLoading={isLoading} error={error} />
 
-      <CreateTransactionModal
-        form={form}
-        open={open}
-        setOpen={setOpen}
-        submitError={submitError}
-        submitSuccess={submitSuccess}
-        isSubmitting={isSubmitting}
-      />
+      {isSuperAdmin && (
+        <CreateTransactionModal
+          form={form}
+          open={open}
+          setOpen={setOpen}
+          submitError={submitError}
+          submitSuccess={submitSuccess}
+          isSubmitting={isSubmitting}
+        />
+      )}
     </SidebarInset>
   )
 }
