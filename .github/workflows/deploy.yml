@@ -19,7 +19,7 @@ jobs:
           script: |
             cd /var/www/rukunin
             git pull origin main
-            npm ci
+            npm install
             npm run build:api
             npm run build:web
             npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
