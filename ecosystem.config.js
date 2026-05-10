@@ -17,6 +17,8 @@ module.exports = {
       cwd: '/var/www/rukunin/apps/web',
       instances: 1,
       exec_mode: 'fork',
+      restart_delay: 5000,
+      max_restarts: 5,
       env_production: {
         NODE_ENV: 'production',
         PORT: 3000,
