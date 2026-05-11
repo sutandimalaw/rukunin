@@ -23,5 +23,15 @@ jobs:
             npm run build:api
             npm run build:web
             npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
-            pm2 reload ecosystem.config.js --env production
+
+            # Avoid EADDRINUSE on deploy if an old process is still holding the port
+            pm2 stop rukunin-web || true
+            pm2 stop rukunin-api || true
+
+            if command -v lsof >/dev/null 2>&1; then
+              kill -9 $(lsof -t -i:3000) 2>/dev/null || true
+              kill -9 $(lsof -t -i:3001) 2>/dev/null || true
+            fi
+
+            pm2 startOrRestart ecosystem.config.js --env production --update-env || pm2 restart ecosystem.config.js --env production --update-env
             pm2 save
