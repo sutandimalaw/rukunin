@@ -6,7 +6,7 @@ const DEFAULT_TIMEOUT_MS = (() => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 10_000;
 })();
 
-function mergeSignals(a: AbortSignal | undefined, b: AbortSignal): AbortSignal {
+function mergeSignals(a: AbortSignal | null | undefined, b: AbortSignal): AbortSignal {
   if (!a) return b;
   const anyFn = (AbortSignal as unknown as { any?: (signals: AbortSignal[]) => AbortSignal }).any;
   if (typeof anyFn === 'function') return anyFn([a, b]);
