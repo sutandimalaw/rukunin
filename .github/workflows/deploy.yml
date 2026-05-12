@@ -60,6 +60,12 @@ jobs:
 
             # Prefer deterministic install (npm ci) but fallback to npm install if lock/workspaces mismatch.
             npm ci --include=optional || npm install --include=optional
+
+            echo "Node: $(node -v) | npm: $(npm -v)"
+            echo "Preflight: Tailwind Oxide (WASI)"
+            (cd apps/web && NAPI_RS_FORCE_WASI=1 node -e "require('@tailwindcss/oxide'); console.log('oxide ok')")
+            echo "Preflight: lightningcss (WASM)"
+            (cd apps/web && CSS_TRANSFORMER_WASM=1 node -e "require('lightningcss'); console.log('lightningcss ok')")
             npm run build:api
 
             # VPS networking has been unstable, and native optional deps (Tailwind Oxide, lightningcss)
