@@ -43,6 +43,20 @@ jobs:
             npm config set fetch-retry-maxtimeout 120000
 
             npm install --include=optional
+
+            # Ensure lightningcss native binary is present (Tailwind v4 uses it).
+            # On flaky networks, npm may continue even if optional platform binaries fail to download.
+            if [ ! -f apps/web/node_modules/lightningcss/lightningcss.linux-x64-gnu.node ]; then
+              echo "lightningcss native binary missing; attempting explicit install of linux binary package..."
+              LCSS_VER=$(node -p "(require('./package-lock.json').packages && require('./package-lock.json').packages['node_modules/lightningcss-linux-x64-gnu'] && require('./package-lock.json').packages['node_modules/lightningcss-linux-x64-gnu'].version) || ''")
+              if [ -n "$LCSS_VER" ]; then
+                npm install --no-save --include=optional lightningcss-linux-x64-gnu@"$LCSS_VER"
+              else
+                npm install --no-save --include=optional lightningcss-linux-x64-gnu
+              fi
+            fi
+
+            (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')")
             npm run build:api
             npm run build:web
             npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
