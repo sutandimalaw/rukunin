@@ -36,13 +36,13 @@ jobs:
             rm -f apps/web/package-lock.json || true
 
             # Ensure optionalDependencies are installed (e.g. lightningcss platform binary)
+            # (Do not set `npm config optional`, it's deprecated in newer npm versions.)
             npm config delete omit || true
-            npm config set optional true
             npm config set fetch-retries 5
             npm config set fetch-retry-mintimeout 20000
             npm config set fetch-retry-maxtimeout 120000
 
-            npm install
+            npm install --include=optional
             npm run build:api
             npm run build:web
             npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
