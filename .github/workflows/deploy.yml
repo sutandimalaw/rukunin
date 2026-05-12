@@ -24,7 +24,24 @@ jobs:
             # Prevent: "fatal: detected dubious ownership in repository"
             git config --global --add safe.directory /var/www/rukunin
 
-            git pull origin main
+            # Always deploy the exact latest commit from origin/main
+            git fetch --prune origin main
+            git reset --hard origin/main
+            git clean -fd
+
+            echo "Deployed commit: $(git rev-parse --short HEAD)"
+
+            # Next.js can mis-detect workspace root when multiple lockfiles exist.
+            # Ensure no nested lockfile remains on the server.
+            rm -f apps/web/package-lock.json || true
+
+            # Ensure optionalDependencies are installed (e.g. lightningcss platform binary)
+            npm config delete omit || true
+            npm config set optional true
+            npm config set fetch-retries 5
+            npm config set fetch-retry-mintimeout 20000
+            npm config set fetch-retry-maxtimeout 120000
+
             npm install
             npm run build:api
             npm run build:web
