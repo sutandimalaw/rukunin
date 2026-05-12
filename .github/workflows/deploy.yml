@@ -58,6 +58,11 @@ jobs:
 
             (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')")
             npm run build:api
+
+            # VPS networking has been unstable, and native optional deps (Tailwind Oxide, lightningcss)
+            # can fail to install reliably. Force WASM fallbacks during build to avoid native bindings.
+            export NAPI_RS_FORCE_WASI=1
+            export CSS_TRANSFORMER_WASM=1
             npm run build:web
             npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
 
