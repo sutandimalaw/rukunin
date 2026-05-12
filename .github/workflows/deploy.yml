@@ -62,15 +62,24 @@ jobs:
             npm ci --include=optional || npm install --include=optional
 
             echo "Node: $(node -v) | npm: $(npm -v)"
-            echo "Preflight: Tailwind Oxide (WASI)"
+            # Ensure platform binaries are present for Tailwind v4 + lightningcss on Linux.
+            # On flaky networks, optional deps may silently fail to download.
+            OXIDE_VER=$(node -p "(require('./package-lock.json').packages && require('./package-lock.json').packages['apps/web/node_modules/@tailwindcss/oxide'] && require('./package-lock.json').packages['apps/web/node_modules/@tailwindcss/oxide'].version) || ''")
+            LCSS_VER=$(node -p "(require('./package-lock.json').packages && require('./package-lock.json').packages['apps/web/node_modules/lightningcss'] && require('./package-lock.json').packages['apps/web/node_modules/lightningcss'].version) || ''")
+
+            echo "Installing platform binaries (oxide=${OXIDE_VER:-unknown}, lightningcss=${LCSS_VER:-unknown})"
+            npm install --no-save --include=optional "@tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}" "lightningcss-linux-x64-gnu@${LCSS_VER}" || \
+              npm install --no-save --include=optional @tailwindcss/oxide-linux-x64-gnu lightningcss-linux-x64-gnu
+
+            echo "Preflight: Tailwind Oxide (native or WASI fallback)"
             (cd apps/web && NAPI_RS_FORCE_WASI=1 node -e "require('@tailwindcss/oxide'); console.log('oxide ok')")
-            echo "Preflight: lightningcss (WASM)"
-            (cd apps/web && CSS_TRANSFORMER_WASM=1 node -e "require('lightningcss'); console.log('lightningcss ok')")
+            echo "Preflight: lightningcss (native)"
+            (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')")
             npm run build:api
 
-            # VPS networking has been unstable, and native optional deps (Tailwind Oxide, lightningcss)
-            # can fail to install reliably. Force WASM fallbacks during build to avoid native bindings.
-            NAPI_RS_FORCE_WASI=1 CSS_TRANSFORMER_WASM=1 npm run build:web
+            # VPS networking has been unstable; Tailwind Oxide can fall back to WASI if native binding is missing.
+            # Do NOT set CSS_TRANSFORMER_WASM here: lightningcss package may not include the ../pkg WASM bundle on VPS.
+            NAPI_RS_FORCE_WASI=1 npm run build:web
             npx prisma migrate deploy --schema apps/api/src/prisma/schema.prisma
 
             # Avoid EADDRINUSE on deploy if an old process is still holding the port
