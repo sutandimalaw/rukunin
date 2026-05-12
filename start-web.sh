@@ -1,26 +1,39 @@
 #!/bin/bash
-set -e
+# start-web.sh - Wrapper script to start the Next.js app for Rukunin
+# Ensures the port is free before starting and handles graceful shutdown.
 
+set -euo pipefail
 PORT=3000
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="apps/web"
 
-kill_port() {
-	if command -v fuser >/dev/null 2>&1; then
-		fuser -k ${PORT}/tcp 2>/dev/null || true
-	fi
+echo "Starting Rukunin Web..."
+echo "Ensuring port $PORT is free..."
+fuser -k -n tcp "$PORT" || true
+sleep 2 # Give the OS a moment to release the port
+
+# Function to be called on script exit
+cleanup() {
+    echo "Caught signal, stopping Rukunin Web process..."
+    if [ -n "$web_pid" ]; then
+        kill "$web_pid"
+        wait "$web_pid" 2>/dev/null
+    fi
+    echo "Rukunin Web stopped."
+    exit 0
 }
 
-# Kill any lingering process on port 3000 (helps prevent EADDRINUSE)
-kill_port
+# Trap termination signals
+trap cleanup SIGTERM SIGINT
 
-# Give the kernel a moment to release the socket
-sleep 2
+# Start the Next.js app in the background
+echo "Starting Next.js server from directory: $APP_DIR"
+(
+  cd "$APP_DIR"
+  exec ../../node_modules/.bin/next start
+) &
 
-cd "$SCRIPT_DIR/apps/web"
+web_pid=$!
+echo "Rukunin Web process started with PID: $web_pid"
 
-node_modules/.bin/next start --port ${PORT} &
-NEXT_PID=$!
-
-trap 'echo "Shutting down Next.js..."; kill "$NEXT_PID" 2>/dev/null || true; sleep 2; kill_port; exit 0' SIGTERM SIGINT
-
-wait "$NEXT_PID"
+# Wait for the process to exit
+wait "$web_pid"
