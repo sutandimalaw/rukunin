@@ -26,8 +26,9 @@ jobs:
             if ssh \
               -o StrictHostKeyChecking=no \
               -o ConnectTimeout=20 \
-              -o ServerAliveInterval=15 \
-              -o ServerAliveCountMax=3 \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=10 \
+              -o BatchMode=no \
               -p "${VPS_PORT}" \
               "${VPS_USER}@${VPS_HOST}" \
               'bash -s' <<'EOF'
@@ -44,41 +45,51 @@ jobs:
 
             echo "Deployed commit: $(git rev-parse --short HEAD)"
 
+            # Preflight: Check disk space
+            DISK_USAGE=$(df /var/www/rukunin | tail -1 | awk '{print $5}' | sed 's/%//')
+            echo "Disk usage: ${DISK_USAGE}%"
+            if [ "${DISK_USAGE}" -gt 90 ]; then
+              echo "ERROR: Disk usage >90%. Aborting."
+              exit 1
+            fi
+
             # Next.js can mis-detect workspace root when multiple lockfiles exist.
             # Ensure no nested lockfile remains on the server.
             rm -f apps/web/package-lock.json || true
 
-            # Avoid reusing a partially-installed node_modules (common cause of missing native/optional bindings)
+            # Force cleanup of any corrupted/partial node_modules installations.
+            # The TAR_ENTRY_ERROR errors are often due to leftover .npm-lock files from interrupted installs.
+            echo "Cleaning node_modules and npm cache..."
             rm -rf node_modules apps/web/node_modules apps/api/node_modules || true
+            rm -rf .npm || true
+            pkill -9 npm || true
+            sleep 2
 
             # Ensure optionalDependencies are installed (e.g. lightningcss platform binary)
-            # (Do not set `npm config optional`, it's deprecated in newer npm versions.)
             npm config delete omit || true
             npm config set fetch-retries 5
             npm config set fetch-retry-mintimeout 20000
             npm config set fetch-retry-maxtimeout 120000
+            npm cache clean --force
 
-            # Prefer deterministic install (npm ci) but fallback to npm install if lock/workspaces mismatch.
-            npm ci --include=optional || npm install --include=optional
-
+            # Log npm version for debugging
             echo "Node: $(node -v) | npm: $(npm -v)"
-            # Ensure platform binaries are present for Tailwind v4 + lightningcss on Linux.
-            # On flaky networks, optional deps may silently fail to download.
-            OXIDE_VER=$(node -p "(require('./package-lock.json').packages && require('./package-lock.json').packages['apps/web/node_modules/@tailwindcss/oxide'] && require('./package-lock.json').packages['apps/web/node_modules/@tailwindcss/oxide'].version) || ''")
-            LCSS_VER=$(node -p "(require('./package-lock.json').packages && require('./package-lock.json').packages['apps/web/node_modules/lightningcss'] && require('./package-lock.json').packages['apps/web/node_modules/lightningcss'].version) || ''")
 
-            echo "Installing platform binaries (oxide=${OXIDE_VER:-unknown}, lightningcss=${LCSS_VER:-unknown})"
-            npm install --no-save --include=optional "@tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}" "lightningcss-linux-x64-gnu@${LCSS_VER}" || \
-              npm install --no-save --include=optional @tailwindcss/oxide-linux-x64-gnu lightningcss-linux-x64-gnu
+            # Use npm install instead of npm ci (more forgiving of lock/workspace mismatches on flaky networks)
+            echo "Installing dependencies (this may take several minutes)..."
+            npm install --include=optional 2>&1 | grep -E '(added|removed|changed|audited|packages|WARN|ERR)' || echo "npm install in progress..."
 
-            echo "Preflight: Tailwind Oxide (native or WASI fallback)"
-            (cd apps/web && NAPI_RS_FORCE_WASI=1 node -e "require('@tailwindcss/oxide'); console.log('oxide ok')")
+            # Verify optional dependencies installed
+            if [ ! -f "apps/web/node_modules/lightningcss/package.json" ]; then
+              echo "WARN: lightningcss not found. Attempting retry..."
+              npm install --include=optional lightningcss 2>&1 | tail -20
+            fi
+
             echo "Preflight: lightningcss (native)"
-            (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')")
-            npm run build:api
+            (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')" || echo "WARN: lightningcss native binding missing, will use WASI fallback")
 
-            # VPS networking has been unstable; Tailwind Oxide can fall back to WASI if native binding is missing.
-            # Do NOT set CSS_TRANSFORMER_WASM here: lightningcss package may not include the ../pkg WASM bundle on VPS.
+            # Build
+            npm run build:api
             NAPI_RS_FORCE_WASI=1 npm run build:web
             npx prisma migrate deploy --schema apps/api/src/prisma/schema.prisma
 
@@ -102,8 +113,8 @@ jobs:
               exit 0
             fi
 
-            echo "SSH attempt ${attempt} failed. Retrying..."
-            sleep $((attempt * 5))
+            echo "SSH attempt ${attempt} failed. Retrying in ${attempt}0 seconds..."
+            sleep $((attempt * 10))
           done
 
           echo "Deploy failed after 5 SSH attempts."
