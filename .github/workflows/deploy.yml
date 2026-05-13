@@ -54,69 +54,117 @@ jobs:
             fi
 
             # Next.js can mis-detect workspace root when multiple lockfiles exist.
-            # Ensure no nested lockfile remains on the server.
             rm -f apps/web/package-lock.json || true
 
-            # Force cleanup of any corrupted/partial node_modules installations.
-            # The TAR_ENTRY_ERROR errors are often due to leftover .npm-lock files from interrupted installs.
-            echo "Cleaning node_modules and npm cache..."
-            rm -rf node_modules apps/web/node_modules apps/api/node_modules || true
-            rm -rf .npm || true
-            pkill -9 npm || true
-            sleep 2
-
-            # Ensure optionalDependencies are installed (e.g. lightningcss platform binary)
-            npm config delete omit || true
-            npm config set fetch-retries 5
-            npm config set fetch-retry-mintimeout 20000
-            npm config set fetch-retry-maxtimeout 120000
-            npm cache clean --force
-
-            # Log npm version for debugging
-            echo "Node: $(node -v) | npm: $(npm -v)"
-
-            # Use npm install instead of npm ci (more forgiving of lock/workspace mismatches on flaky networks)
-            echo "Installing dependencies (this may take several minutes)..."
-            npm install --include=optional 2>&1 | grep -E '(added|removed|changed|audited|packages|WARN|ERR)' || echo "npm install in progress..."
-
-            # CRITICAL: On flaky networks, optional platform-specific binaries often silently fail to download.
-            # Explicitly install the Linux x64 native binaries for lightningcss and Tailwind Oxide.
-            echo "Installing platform-specific native binaries for Linux..."
+            # Smart dependency management: only reinstall if package-lock.json changed
+            NEEDS_INSTALL=false
             
-            # Extract versions from installed packages
-            LCSS_VER=$(node -p "try { require('./apps/web/node_modules/lightningcss/package.json').version } catch(e) { '' }")
-            OXIDE_VER=$(node -p "try { require('./apps/web/node_modules/@tailwindcss/oxide/package.json').version } catch(e) { '' }")
-            
-            if [ -n "${LCSS_VER}" ]; then
-              echo "Installing lightningcss-linux-x64-gnu@${LCSS_VER}..."
-              npm install --no-save --include=optional "lightningcss-linux-x64-gnu@${LCSS_VER}" || \
-                npm install --no-save --include=optional lightningcss-linux-x64-gnu@latest
-            fi
-            
-            if [ -n "${OXIDE_VER}" ]; then
-              echo "Installing @tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}..."
-              npm install --no-save --include=optional "@tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}" || \
-                npm install --no-save --include=optional @tailwindcss/oxide-linux-x64-gnu@latest
+            if [ ! -d "node_modules" ]; then
+              echo "node_modules not found - will install"
+              NEEDS_INSTALL=true
+            elif git diff HEAD@{1} HEAD --name-only 2>/dev/null | grep -q "package-lock.json\|package.json"; then
+              echo "Dependencies changed - will reinstall"
+              NEEDS_INSTALL=true
+            else
+              echo "Dependencies unchanged - skipping install"
             fi
 
-            # Verify the native .node binaries exist (not just package.json)
+            if [ "$NEEDS_INSTALL" = true ]; then
+              # Clean install for changed dependencies
+              echo "Cleaning for fresh install..."
+              rm -rf node_modules apps/web/node_modules apps/api/node_modules || true
+              pkill -9 npm || true
+              sleep 2
+
+              npm config delete omit || true
+              npm config set fetch-retries 5
+              npm config set fetch-retry-mintimeout 20000
+              npm config set fetch-retry-maxtimeout 120000
+
+              echo "Installing dependencies (this may take several minutes)..."
+              npm install --include=optional 2>&1 | grep -E '(added|removed|changed|audited|packages|WARN|ERR)' || echo "npm install in progress..."
+
+              # CRITICAL: Explicitly install platform-specific native binaries
+              echo "Installing platform-specific native binaries for Linux..."
+              
+              LCSS_VER=$(node -p "try { require('./apps/web/node_modules/lightningcss/package.json').version } catch(e) { '' }")
+              OXIDE_VER=$(node -p "try { require('./apps/web/node_modules/@tailwindcss/oxide/package.json').version } catch(e) { '' }")
+              
+              if [ -n "${LCSS_VER}" ]; then
+                echo "Installing lightningcss-linux-x64-gnu@${LCSS_VER}..."
+                npm install --no-save --include=optional "lightningcss-linux-x64-gnu@${LCSS_VER}" || \
+                  npm install --no-save --include=optional lightningcss-linux-x64-gnu@latest
+              fi
+              
+              if [ -n "${OXIDE_VER}" ]; then
+                echo "Installing @tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}..."
+                npm install --no-save --include=optional "@tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}" || \
+                  npm install --no-save --include=optional @tailwindcss/oxide-linux-x64-gnu@latest
+              fi
+            fi
+
+            # Always verify native binaries exist before build
             echo "Verifying native binaries..."
             LCSS_BINARY="apps/web/node_modules/lightningcss/lightningcss.linux-x64-gnu.node"
             if [ ! -f "${LCSS_BINARY}" ]; then
               echo "ERROR: lightningcss native binary not found at ${LCSS_BINARY}"
               echo "Contents of apps/web/node_modules/lightningcss/:"
               ls -la apps/web/node_modules/lightningcss/ || echo "Directory not found"
-              exit 1
-            else
-              echo "✓ lightningcss native binary found"
+              
+              # Try to fix by reinstalling
+              echo "Attempting to fix by reinstalling lightningcss..."
+              npm install --no-save --include=optional lightningcss-linux-x64-gnu@latest
+              
+              if [ ! -f "${LCSS_BINARY}" ]; then
+                echo "ERROR: Still missing after reinstall. Aborting."
+                exit 1
+              fi
+            fi
+            echo "✓ lightningcss native binary found"
+
+            # Smart build: only rebuild what changed
+            CHANGED_FILES=$(git diff HEAD@{1} HEAD --name-only 2>/dev/null || echo "all")
+            
+            NEEDS_API_BUILD=false
+            NEEDS_WEB_BUILD=false
+            
+            if echo "$CHANGED_FILES" | grep -qE "^apps/api/|all"; then
+              echo "API source changed - will rebuild API"
+              NEEDS_API_BUILD=true
+            fi
+            
+            if echo "$CHANGED_FILES" | grep -qE "^apps/web/|all"; then
+              echo "Web source changed - will rebuild Web"
+              NEEDS_WEB_BUILD=true
+            fi
+            
+            # Always rebuild if dependencies changed (build artifacts may need updating)
+            if [ "$NEEDS_INSTALL" = true ]; then
+              echo "Dependencies changed - forcing full rebuild"
+              NEEDS_API_BUILD=true
+              NEEDS_WEB_BUILD=true
             fi
 
-            # Build
-            npm run build:api
-            NAPI_RS_FORCE_WASI=1 npm run build:web
+            # Build what's needed
+            if [ "$NEEDS_API_BUILD" = true ]; then
+              echo "Building API..."
+              npm run build:api
+            else
+              echo "Skipping API build (no changes)"
+            fi
+            
+            if [ "$NEEDS_WEB_BUILD" = true ]; then
+              echo "Building Web (this may take 5-10 minutes)..."
+              NAPI_RS_FORCE_WASI=1 npm run build:web
+            else
+              echo "Skipping Web build (no changes)"
+            fi
+            
+            # Always run migrations (fast, idempotent)
             npx prisma migrate deploy --schema apps/api/src/prisma/schema.prisma
 
-            # Avoid EADDRINUSE on deploy if an old process is still holding the port
+            # Restart apps
+            echo "Restarting applications..."
             pm2 delete rukunin-web || true
             pm2 delete rukunin-api || true
 
