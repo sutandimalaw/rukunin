@@ -79,14 +79,37 @@ jobs:
             echo "Installing dependencies (this may take several minutes)..."
             npm install --include=optional 2>&1 | grep -E '(added|removed|changed|audited|packages|WARN|ERR)' || echo "npm install in progress..."
 
-            # Verify optional dependencies installed
-            if [ ! -f "apps/web/node_modules/lightningcss/package.json" ]; then
-              echo "WARN: lightningcss not found. Attempting retry..."
-              npm install --include=optional lightningcss 2>&1 | tail -20
+            # CRITICAL: On flaky networks, optional platform-specific binaries often silently fail to download.
+            # Explicitly install the Linux x64 native binaries for lightningcss and Tailwind Oxide.
+            echo "Installing platform-specific native binaries for Linux..."
+            
+            # Extract versions from installed packages
+            LCSS_VER=$(node -p "try { require('./apps/web/node_modules/lightningcss/package.json').version } catch(e) { '' }")
+            OXIDE_VER=$(node -p "try { require('./apps/web/node_modules/@tailwindcss/oxide/package.json').version } catch(e) { '' }")
+            
+            if [ -n "${LCSS_VER}" ]; then
+              echo "Installing lightningcss-linux-x64-gnu@${LCSS_VER}..."
+              npm install --no-save --include=optional "lightningcss-linux-x64-gnu@${LCSS_VER}" || \
+                npm install --no-save --include=optional lightningcss-linux-x64-gnu@latest
+            fi
+            
+            if [ -n "${OXIDE_VER}" ]; then
+              echo "Installing @tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}..."
+              npm install --no-save --include=optional "@tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}" || \
+                npm install --no-save --include=optional @tailwindcss/oxide-linux-x64-gnu@latest
             fi
 
-            echo "Preflight: lightningcss (native)"
-            (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')" || echo "WARN: lightningcss native binding missing, will use WASI fallback")
+            # Verify the native .node binaries exist (not just package.json)
+            echo "Verifying native binaries..."
+            LCSS_BINARY="apps/web/node_modules/lightningcss/lightningcss.linux-x64-gnu.node"
+            if [ ! -f "${LCSS_BINARY}" ]; then
+              echo "ERROR: lightningcss native binary not found at ${LCSS_BINARY}"
+              echo "Contents of apps/web/node_modules/lightningcss/:"
+              ls -la apps/web/node_modules/lightningcss/ || echo "Directory not found"
+              exit 1
+            else
+              echo "✓ lightningcss native binary found"
+            fi
 
             # Build
             npm run build:api
