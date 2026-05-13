@@ -7,7 +7,9 @@ module.exports = {
       instances: 1,
       exec_mode: 'fork',
       kill_timeout: 10000, // 10 seconds
-      restart_delay: 5000, // 5 seconds
+      restart_delay: 8000, // 8 seconds
+      max_restarts: 10,
+      min_uptime: '30s',
       env_production: {
         NODE_ENV: 'production',
       },
