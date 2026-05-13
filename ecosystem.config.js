@@ -22,7 +22,8 @@ module.exports = {
       restart_delay: 5000, // 5 seconds
       max_restarts: 5,
       min_uptime: '60s',
-      max_memory_restart: '300M',
+      // Next.js production process often exceeds 300MB; too-low limit causes frequent restarts (cold starts).
+      max_memory_restart: '800M',
       env_production: {
         NODE_ENV: 'production',
         PORT: 3000,
