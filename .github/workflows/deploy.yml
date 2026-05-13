@@ -8,191 +8,112 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        # GH Actions runner is ubuntu-latest (linux-x64-gnu) — same arch as VPS.
+        # npm install here correctly downloads all native binaries (lightningcss, oxide, etc.).
+        run: npm install --include=optional
+
+      - name: Generate Prisma client
+        run: npx prisma generate --schema apps/api/src/prisma/schema.prisma
+
+      - name: Build API
+        run: npm run build:api
+
+      - name: Build Web
+        run: npm run build:web
+
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Deploy to IDCloudHost VPS (with retry)
+      - name: Add VPS to known hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${VPS_PORT}" -H "${VPS_HOST}" >> ~/.ssh/known_hosts 2>/dev/null || \
+          ssh-keyscan -H "${VPS_HOST}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Rsync build artifacts to VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
         run: |
-          set -euo pipefail
+          SSH_OPTS="-p ${VPS_PORT} -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10"
 
-          for attempt in 1 2 3 4 5; do
-            echo "SSH attempt ${attempt}/5..."
+          # Sync Next.js build output (exclude heavy incremental cache)
+          rsync -az --delete \
+            --exclude='cache' \
+            -e "ssh ${SSH_OPTS}" \
+            apps/web/.next/ \
+            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/web/.next/"
+
+          # Sync NestJS build output
+          rsync -az --delete \
+            -e "ssh ${SSH_OPTS}" \
+            apps/api/dist/ \
+            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/api/dist/"
+
+          # Sync node_modules so VPS gets correct native binaries — rsync is incremental, fast after first run
+          rsync -az --delete \
+            -e "ssh ${SSH_OPTS}" \
+            node_modules/ \
+            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/node_modules/"
+
+          rsync -az --delete \
+            -e "ssh ${SSH_OPTS}" \
+            apps/api/node_modules/ \
+            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/api/node_modules/" || true
+
+          rsync -az --delete \
+            -e "ssh ${SSH_OPTS}" \
+            apps/web/node_modules/ \
+            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/web/node_modules/" || true
+
+      - name: Deploy on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          for attempt in 1 2 3; do
+            echo "SSH attempt ${attempt}/3..."
             if ssh \
               -o StrictHostKeyChecking=no \
               -o ConnectTimeout=20 \
               -o ServerAliveInterval=30 \
               -o ServerAliveCountMax=10 \
-              -o BatchMode=no \
               -p "${VPS_PORT}" \
               "${VPS_USER}@${VPS_HOST}" \
               'bash -s' <<'EOF'
             set -euo pipefail
             cd /var/www/rukunin
 
-            # Prevent: "fatal: detected dubious ownership in repository"
             git config --global --add safe.directory /var/www/rukunin
 
-            # Always deploy the exact latest commit from origin/main
+            # Pull latest code (package.json, prisma schema, ecosystem.config.js, etc.)
+            # Do NOT run git clean-fd: rsync'd .next/ and dist/ must be preserved
             git fetch --prune origin main
             git reset --hard origin/main
-            git clean -fd
 
             echo "Deployed commit: $(git rev-parse --short HEAD)"
 
-            # Preflight: Check disk space
-            DISK_USAGE=$(df /var/www/rukunin | tail -1 | awk '{print $5}' | sed 's/%//')
-            echo "Disk usage: ${DISK_USAGE}%"
-            if [ "${DISK_USAGE}" -gt 90 ]; then
-              echo "ERROR: Disk usage >90%. Aborting."
-              exit 1
-            fi
-
-            # Next.js can mis-detect workspace root when multiple lockfiles exist.
-            rm -f apps/web/package-lock.json || true
-
-            # Determine what changed since the last successful deploy.
-            # Store in $HOME (always writable by the SSH user) so git clean doesn't remove it.
-            LAST_SHA_FILE="${HOME}/.rukunin_last_deploy_sha"
-
-            BASE_SHA=""
-            if [ -f "${LAST_SHA_FILE}" ]; then
-              BASE_SHA=$(cat "${LAST_SHA_FILE}" || true)
-              if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-                BASE_SHA=""
-              fi
-            fi
-
-            if [ -n "${BASE_SHA}" ]; then
-              CHANGED_FILES=$(git diff --name-only "${BASE_SHA}..HEAD" || echo "all")
-              echo "Diff base: ${BASE_SHA:0:7} → $(git rev-parse --short HEAD)"
-            else
-              CHANGED_FILES="all"
-              echo "No valid last deploy SHA found; treating as full deploy"
-            fi
-
-            # Smart dependency management: only reinstall if dependencies changed since last deploy
-            NEEDS_INSTALL=false
-
-            if [ ! -d "node_modules" ]; then
-              echo "node_modules not found - will install"
-              NEEDS_INSTALL=true
-            elif echo "$CHANGED_FILES" | grep -qE "(^|/)package-lock\\.json$|(^|/)package\\.json$|(^|/)apps/(web|api)/package\\.json$"; then
-              echo "Dependencies changed - will reinstall"
-              NEEDS_INSTALL=true
-            else
-              echo "Dependencies unchanged - skipping install"
-            fi
-
-            if [ "$NEEDS_INSTALL" = true ]; then
-              # Clean install for changed dependencies
-              echo "Cleaning for fresh install..."
-              rm -rf node_modules apps/web/node_modules apps/api/node_modules || true
-              pkill -9 npm || true
-              sleep 2
-
-              npm config delete omit || true
-              npm config set fetch-retries 5
-              npm config set fetch-retry-mintimeout 20000
-              npm config set fetch-retry-maxtimeout 120000
-
-              echo "Installing dependencies (this may take several minutes)..."
-              npm install --include=optional 2>&1 | grep -E '(added|removed|changed|audited|packages|WARN|ERR)' || echo "npm install in progress..."
-
-              # CRITICAL: Explicitly install platform-specific native binaries
-              echo "Installing platform-specific native binaries for Linux..."
-              
-              LCSS_VER=$(node -p "try { require('./apps/web/node_modules/lightningcss/package.json').version } catch(e) { '' }")
-              OXIDE_VER=$(node -p "try { require('./apps/web/node_modules/@tailwindcss/oxide/package.json').version } catch(e) { '' }")
-              
-              if [ -n "${LCSS_VER}" ]; then
-                echo "Installing lightningcss-linux-x64-gnu@${LCSS_VER}..."
-                npm install --no-save --include=optional "lightningcss-linux-x64-gnu@${LCSS_VER}" || \
-                  npm install --no-save --include=optional lightningcss-linux-x64-gnu@latest
-              fi
-              
-              if [ -n "${OXIDE_VER}" ]; then
-                echo "Installing @tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}..."
-                npm install --no-save --include=optional "@tailwindcss/oxide-linux-x64-gnu@${OXIDE_VER}" || \
-                  npm install --no-save --include=optional @tailwindcss/oxide-linux-x64-gnu@latest
-              fi
-            fi
-
-            # Preflight: ensure lightningcss can actually be required on this host.
-            # lightningcss prefers loading an optional platform package (e.g. lightningcss-linux-x64-gnu).
-            # The fallback "lightningcss.<platform>.node" file is NOT guaranteed to exist.
-            echo "Preflight: lightningcss runtime..."
-            if (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')"); then
-              echo "✓ lightningcss ok"
-            else
-              echo "WARN: lightningcss require failed. Installing platform optional package and retrying..."
-
-              LCSS_VER=$(node -p "try { require('./apps/web/node_modules/lightningcss/package.json').version } catch(e) { '' }")
-              LCSS_PKG=$(cd apps/web && node -p "(() => { const dl=require('detect-libc'); let parts=[process.platform,process.arch]; if(process.platform==='linux'){ const family=dl.familySync(); if(family===dl.MUSL) parts.push('musl'); else if(process.arch==='arm') parts.push('gnueabihf'); else parts.push('gnu'); } else if(process.platform==='win32'){ parts.push('msvc'); } return 'lightningcss-' + parts.join('-'); })()")
-
-              echo "Target platform package: ${LCSS_PKG} (version=${LCSS_VER:-unknown})"
-              if [ -n "${LCSS_VER}" ]; then
-                npm install --no-save --include=optional "${LCSS_PKG}@${LCSS_VER}" || npm install --no-save --include=optional "${LCSS_PKG}@latest"
-              else
-                npm install --no-save --include=optional "${LCSS_PKG}@latest"
-              fi
-
-              # Retry require and show useful diagnostics on failure.
-              (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok after install')") || {
-                echo "ERROR: lightningcss still cannot be required after installing ${LCSS_PKG}."
-                echo "Debug: list installed lightningcss packages"
-                (cd apps/web && npm ls lightningcss || true)
-                (cd apps/web && npm ls "${LCSS_PKG}" || true)
-                exit 1
-              }
-            fi
-
-            # Smart build: only rebuild what changed
-            NEEDS_API_BUILD=false
-            NEEDS_WEB_BUILD=false
-            
-            if echo "$CHANGED_FILES" | grep -qE "^apps/api/|all"; then
-              echo "API source changed - will rebuild API"
-              NEEDS_API_BUILD=true
-            fi
-            
-            if echo "$CHANGED_FILES" | grep -qE "^apps/web/|all"; then
-              echo "Web source changed - will rebuild Web"
-              NEEDS_WEB_BUILD=true
-            fi
-            
-            # Always rebuild if dependencies changed (build artifacts may need updating)
-            if [ "$NEEDS_INSTALL" = true ]; then
-              echo "Dependencies changed - forcing full rebuild"
-              NEEDS_API_BUILD=true
-              NEEDS_WEB_BUILD=true
-            fi
-
-            # Build what's needed
-            if [ "$NEEDS_API_BUILD" = true ]; then
-              echo "Building API..."
-              npm run build:api
-            else
-              echo "Skipping API build (no changes)"
-            fi
-            
-            if [ "$NEEDS_WEB_BUILD" = true ]; then
-              echo "Building Web (this may take 5-10 minutes)..."
-              NAPI_RS_FORCE_WASI=1 npm run build:web
-            else
-              echo "Skipping Web build (no changes)"
-            fi
-            
-            # Always run migrations (fast, idempotent)
+            # Run database migrations (requires VPS DB access)
             npx prisma migrate deploy --schema apps/api/src/prisma/schema.prisma
 
             # Restart apps
-            echo "Restarting applications..."
             pm2 delete rukunin-web || true
             pm2 delete rukunin-api || true
 
@@ -207,17 +128,15 @@ jobs:
             pm2 start ecosystem.config.js --env production --update-env
             pm2 save
 
-            # Record last successful deploy SHA for next run diffing
-            echo "$(git rev-parse HEAD)" > "${LAST_SHA_FILE}"
+            echo "Deploy complete: $(git rev-parse --short HEAD)"
           EOF
             then
               echo "Deploy succeeded."
               exit 0
             fi
-
-            echo "SSH attempt ${attempt} failed. Retrying in ${attempt}0 seconds..."
+            echo "SSH attempt ${attempt} failed. Retrying in $((attempt * 10))s..."
             sleep $((attempt * 10))
           done
 
-          echo "Deploy failed after 5 SSH attempts."
+          echo "Deploy failed after 3 SSH attempts."
           exit 1
