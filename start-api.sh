@@ -9,7 +9,11 @@ APP_DIR="apps/api"
 echo "Starting Rukunin API..."
 echo "Ensuring port $PORT is free..."
 fuser -k -n tcp "$PORT" || true
-sleep 2 # Give the OS a moment to release the port
+# Wait until port is actually free (max 15s)
+for i in $(seq 1 15); do
+  fuser "$PORT/tcp" > /dev/null 2>&1 || break
+  sleep 1
+done
 
 # Function to be called on script exit
 cleanup() {
