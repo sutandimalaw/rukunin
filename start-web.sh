@@ -29,7 +29,7 @@ trap cleanup SIGTERM SIGINT
 echo "Starting Next.js server from directory: $APP_DIR"
 (
   cd "$APP_DIR"
-  exec ../../node_modules/.bin/next start
+  exec npx next start
 ) &
 
 web_pid=$!
