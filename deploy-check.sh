@@ -47,10 +47,10 @@ git clean -fd
 
 echo "$(date -u): Checked out deploy branch: $(git rev-parse --short HEAD)"
 
-# Install only production runtime deps (omits tailwindcss, lightningcss, oxide, etc.)
-# --prefer-offline uses cached packages when available — fast and network-friendly
-echo "$(date -u): Installing production dependencies..."
-npm install --omit=dev --prefer-offline 2>&1 | tail -3
+# Install all deps (dev needed for prisma CLI, skip optional native binaries — already pre-built in .next/dist/)
+# --no-optional skips lightningcss, oxide, etc. which are heavy and not needed at runtime
+echo "$(date -u): Installing dependencies..."
+npm install --no-optional --prefer-offline 2>&1 | tail -3
 
 # Run database migrations
 echo "$(date -u): Running migrations..."
