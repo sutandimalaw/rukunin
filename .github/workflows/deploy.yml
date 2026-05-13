@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Build & Deploy
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to push to deploy branch
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,8 +20,6 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        # GH Actions runner is ubuntu-latest (linux-x64-gnu) — same arch as VPS.
-        # npm install here correctly downloads all native binaries (lightningcss, oxide, etc.).
         run: npm install --include=optional
 
       - name: Build API
@@ -29,112 +29,26 @@ jobs:
       - name: Build Web
         run: npm run build:web
 
-      - name: Setup SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
-
-      - name: Add VPS to known hosts
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
+      - name: Push artifacts to deploy branch
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p "${VPS_PORT}" -H "${VPS_HOST}" >> ~/.ssh/known_hosts 2>/dev/null || \
-          ssh-keyscan -H "${VPS_HOST}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Rsync build artifacts to VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          SSH_OPTS="-p ${VPS_PORT} -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10"
+          SOURCE_SHA=$(git rev-parse --short HEAD)
 
-          # Sync Next.js build output (exclude heavy incremental cache)
-          rsync -az --delete \
-            --exclude='cache' \
-            -e "ssh ${SSH_OPTS}" \
-            apps/web/.next/ \
-            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/web/.next/"
+          # Force-add build artifacts (excluded by .gitignore)
+          # Exclude .next/cache — it's large and not needed at runtime
+          find apps/web/.next -not -path '*/cache/*' -type f | xargs git add --force
+          git add --force apps/api/dist/
 
-          # Sync NestJS build output
-          rsync -az --delete \
-            -e "ssh ${SSH_OPTS}" \
-            apps/api/dist/ \
-            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/api/dist/"
+          # Add prisma migrations (also excluded by .gitignore)
+          git add --force apps/api/src/prisma/migrations/ 2>/dev/null || true
 
-          # Sync node_modules so VPS gets correct native binaries — rsync is incremental, fast after first run
-          rsync -az --delete \
-            -e "ssh ${SSH_OPTS}" \
-            node_modules/ \
-            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/node_modules/"
+          # Ensure essential runtime config files are staged
+          git add package.json package-lock.json ecosystem.config.js
+          git add apps/web/package.json apps/api/package.json
+          git add apps/api/src/prisma/schema.prisma
+          git add start-web.sh start-api.sh 2>/dev/null || true
 
-          rsync -az --delete \
-            -e "ssh ${SSH_OPTS}" \
-            apps/api/node_modules/ \
-            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/api/node_modules/" || true
-
-          rsync -az --delete \
-            -e "ssh ${SSH_OPTS}" \
-            apps/web/node_modules/ \
-            "${VPS_USER}@${VPS_HOST}:/var/www/rukunin/apps/web/node_modules/" || true
-
-      - name: Deploy on VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          for attempt in 1 2 3; do
-            echo "SSH attempt ${attempt}/3..."
-            if ssh \
-              -o StrictHostKeyChecking=no \
-              -o ConnectTimeout=20 \
-              -o ServerAliveInterval=30 \
-              -o ServerAliveCountMax=10 \
-              -p "${VPS_PORT}" \
-              "${VPS_USER}@${VPS_HOST}" \
-              'bash -s' <<'EOF'
-            set -euo pipefail
-            cd /var/www/rukunin
-
-            git config --global --add safe.directory /var/www/rukunin
-
-            # Pull latest code (package.json, prisma schema, ecosystem.config.js, etc.)
-            # Do NOT run git clean-fd: rsync'd .next/ and dist/ must be preserved
-            git fetch --prune origin main
-            git reset --hard origin/main
-
-            echo "Deployed commit: $(git rev-parse --short HEAD)"
-
-            # Run database migrations (requires VPS DB access)
-            npx prisma migrate deploy --schema apps/api/src/prisma/schema.prisma
-
-            # Restart apps
-            pm2 delete rukunin-web || true
-            pm2 delete rukunin-api || true
-
-            if command -v lsof >/dev/null 2>&1; then
-              kill -9 $(lsof -t -i:3000) 2>/dev/null || true
-              kill -9 $(lsof -t -i:3001) 2>/dev/null || true
-            elif command -v fuser >/dev/null 2>&1; then
-              fuser -k 3000/tcp 2>/dev/null || true
-              fuser -k 3001/tcp 2>/dev/null || true
-            fi
-
-            pm2 start ecosystem.config.js --env production --update-env
-            pm2 save
-
-            echo "Deploy complete: $(git rev-parse --short HEAD)"
-          EOF
-            then
-              echo "Deploy succeeded."
-              exit 0
-            fi
-            echo "SSH attempt ${attempt} failed. Retrying in $((attempt * 10))s..."
-            sleep $((attempt * 10))
-          done
-
-          echo "Deploy failed after 3 SSH attempts."
-          exit 1
+          git commit --allow-empty -m "deploy: ${SOURCE_SHA}"
+          git push --force origin HEAD:refs/heads/deploy
