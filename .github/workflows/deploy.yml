@@ -103,24 +103,51 @@ jobs:
               fi
             fi
 
-            # Always verify native binaries exist before build
-            echo "Verifying native binaries..."
-            LCSS_BINARY="apps/web/node_modules/lightningcss/lightningcss.linux-x64-gnu.node"
-            if [ ! -f "${LCSS_BINARY}" ]; then
-              echo "ERROR: lightningcss native binary not found at ${LCSS_BINARY}"
-              echo "Contents of apps/web/node_modules/lightningcss/:"
-              ls -la apps/web/node_modules/lightningcss/ || echo "Directory not found"
-              
-              # Try to fix by reinstalling
-              echo "Attempting to fix by reinstalling lightningcss..."
-              npm install --no-save --include=optional lightningcss-linux-x64-gnu@latest
-              
-              if [ ! -f "${LCSS_BINARY}" ]; then
-                echo "ERROR: Still missing after reinstall. Aborting."
-                exit 1
+            # Preflight: ensure lightningcss can actually be required on this host.
+            # lightningcss prefers loading an optional platform package (e.g. lightningcss-linux-x64-gnu).
+            # The fallback "lightningcss.<platform>.node" file is NOT guaranteed to exist.
+            echo "Preflight: lightningcss runtime..."
+            if (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok')"); then
+              echo "✓ lightningcss ok"
+            else
+              echo "WARN: lightningcss require failed. Installing platform optional package and retrying..."
+
+              LCSS_VER=$(node -p "try { require('./apps/web/node_modules/lightningcss/package.json').version } catch(e) { '' }")
+              LCSS_PKG=$(cd apps/web && node <<'NODE'
+let parts = [process.platform, process.arch];
+if (process.platform === 'linux') {
+  const { MUSL, familySync } = require('detect-libc');
+  const family = familySync();
+  if (family === MUSL) {
+    parts.push('musl');
+  } else if (process.arch === 'arm') {
+    parts.push('gnueabihf');
+  } else {
+    parts.push('gnu');
+  }
+} else if (process.platform === 'win32') {
+  parts.push('msvc');
+}
+process.stdout.write(`lightningcss-${parts.join('-')}`);
+NODE
+              )
+
+              echo "Target platform package: ${LCSS_PKG} (version=${LCSS_VER:-unknown})"
+              if [ -n "${LCSS_VER}" ]; then
+                npm install --no-save --include=optional "${LCSS_PKG}@${LCSS_VER}" || npm install --no-save --include=optional "${LCSS_PKG}@latest"
+              else
+                npm install --no-save --include=optional "${LCSS_PKG}@latest"
               fi
+
+              # Retry require and show useful diagnostics on failure.
+              (cd apps/web && node -e "require('lightningcss'); console.log('lightningcss ok after install')") || {
+                echo "ERROR: lightningcss still cannot be required after installing ${LCSS_PKG}."
+                echo "Debug: list installed lightningcss packages"
+                (cd apps/web && npm ls lightningcss || true)
+                (cd apps/web && npm ls "${LCSS_PKG}" || true)
+                exit 1
+              }
             fi
-            echo "✓ lightningcss native binary found"
 
             # Smart build: only rebuild what changed
             CHANGED_FILES=$(git diff HEAD@{1} HEAD --name-only 2>/dev/null || echo "all")
