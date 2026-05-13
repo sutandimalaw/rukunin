@@ -17,11 +17,25 @@ cd "${REPO_DIR}"
 
 git config --global --add safe.directory "${REPO_DIR}" 2>/dev/null || true
 
-# Fetch latest deploy branch from GitHub (outbound — always works)
-git fetch origin deploy --quiet 2>&1 || {
-  echo "$(date -u): ERROR: git fetch failed"
+# Fetch latest deploy branch from GitHub.
+# On this VPS, DNS/network can be flaky; retry with backoff and log useful diagnostics.
+fetch_ok=false
+for attempt in 1 2 3 4 5; do
+  if git fetch origin deploy --quiet 2>&1; then
+    fetch_ok=true
+    break
+  fi
+  echo "$(date -u): WARN: git fetch failed (attempt ${attempt}/5), retrying in $((attempt * 5))s..."
+  sleep $((attempt * 5))
+done
+
+if [ "${fetch_ok}" != "true" ]; then
+  echo "$(date -u): ERROR: git fetch failed after retries"
+  echo "$(date -u): DNS diagnostics:"
+  (ls -la /etc/resolv.conf && echo "---" && cat /etc/resolv.conf) 2>&1 || true
+  command -v resolvectl >/dev/null 2>&1 && (echo "---" && resolvectl status) 2>&1 || true
   exit 1
-}
+fi
 
 LOCAL_SHA=$(git rev-parse HEAD 2>/dev/null || echo "none")
 REMOTE_SHA=$(git rev-parse origin/deploy 2>/dev/null || echo "")
