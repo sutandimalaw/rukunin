@@ -57,10 +57,8 @@ jobs:
             rm -f apps/web/package-lock.json || true
 
             # Determine what changed since the last successful deploy.
-            # Store deploy state outside the repo because `git clean -fd` removes untracked files.
-            DEPLOY_STATE_DIR=/var/www/rukunin_deploy_state
-            LAST_SHA_FILE="${DEPLOY_STATE_DIR}/last_sha"
-            mkdir -p "${DEPLOY_STATE_DIR}"
+            # Store in $HOME (always writable by the SSH user) so git clean doesn't remove it.
+            LAST_SHA_FILE="${HOME}/.rukunin_last_deploy_sha"
 
             BASE_SHA=""
             if [ -f "${LAST_SHA_FILE}" ]; then
