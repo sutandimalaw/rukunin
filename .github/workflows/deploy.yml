@@ -113,24 +113,7 @@ jobs:
               echo "WARN: lightningcss require failed. Installing platform optional package and retrying..."
 
               LCSS_VER=$(node -p "try { require('./apps/web/node_modules/lightningcss/package.json').version } catch(e) { '' }")
-              LCSS_PKG=$(cd apps/web && node <<'NODE'
-let parts = [process.platform, process.arch];
-if (process.platform === 'linux') {
-  const { MUSL, familySync } = require('detect-libc');
-  const family = familySync();
-  if (family === MUSL) {
-    parts.push('musl');
-  } else if (process.arch === 'arm') {
-    parts.push('gnueabihf');
-  } else {
-    parts.push('gnu');
-  }
-} else if (process.platform === 'win32') {
-  parts.push('msvc');
-}
-process.stdout.write(`lightningcss-${parts.join('-')}`);
-NODE
-              )
+              LCSS_PKG=$(cd apps/web && node -p "(() => { const dl=require('detect-libc'); let parts=[process.platform,process.arch]; if(process.platform==='linux'){ const family=dl.familySync(); if(family===dl.MUSL) parts.push('musl'); else if(process.arch==='arm') parts.push('gnueabihf'); else parts.push('gnu'); } else if(process.platform==='win32'){ parts.push('msvc'); } return 'lightningcss-' + parts.join('-'); })()")
 
               echo "Target platform package: ${LCSS_PKG} (version=${LCSS_VER:-unknown})"
               if [ -n "${LCSS_VER}" ]; then
