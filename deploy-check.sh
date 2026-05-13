@@ -18,10 +18,11 @@ cd "${REPO_DIR}"
 git config --global --add safe.directory "${REPO_DIR}" 2>/dev/null || true
 
 # Fetch latest deploy branch from GitHub.
-# On this VPS, DNS/network can be flaky; retry with backoff and log useful diagnostics.
+# VPS network can stall; enforce timeout + SSH keepalive so this never hangs forever.
 fetch_ok=false
+GIT_SSH_COMMAND="ssh -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
 for attempt in 1 2 3 4 5; do
-  if git fetch origin deploy --quiet 2>&1; then
+  if timeout 60s env GIT_SSH_COMMAND="${GIT_SSH_COMMAND}" git fetch origin deploy --quiet 2>&1; then
     fetch_ok=true
     break
   fi
