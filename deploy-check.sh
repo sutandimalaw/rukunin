@@ -47,10 +47,12 @@ git clean -fd
 
 echo "$(date -u): Checked out deploy branch: $(git rev-parse --short HEAD)"
 
-# Install all deps (dev needed for prisma CLI, skip optional native binaries — already pre-built in .next/dist/)
-# --no-optional skips lightningcss, oxide, etc. which are heavy and not needed at runtime
-echo "$(date -u): Installing dependencies..."
-npm install --no-optional --prefer-offline 2>&1 | tail -3
+# Install runtime deps.
+# IMPORTANT: do NOT use --no-optional here.
+# Next.js needs platform optional deps on Linux (e.g. @next/swc-linux-x64-gnu) to run `next start`.
+# Keep it lightweight by omitting dev deps, but still include optional deps.
+echo "$(date -u): Installing dependencies (prod + optional)..."
+npm install --omit=dev --include=optional --prefer-offline 2>&1 | tail -20
 
 # Run database migrations
 echo "$(date -u): Running migrations..."
