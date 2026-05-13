@@ -22,10 +22,8 @@ jobs:
         # npm install here correctly downloads all native binaries (lightningcss, oxide, etc.).
         run: npm install --include=optional
 
-      - name: Generate Prisma client
-        run: npx prisma generate --schema apps/api/src/prisma/schema.prisma
-
       - name: Build API
+        # prisma generate is already in the build script: "prisma generate && nest build"
         run: npm run build:api
 
       - name: Build Web
