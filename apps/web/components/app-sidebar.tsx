@@ -35,7 +35,7 @@ const data = {
     {
       name: "Rukunin",
       logo: Building2,
-      plan: "Web RT",
+      plan: "Sriwijaya RT 4",
     },
   ],
   navMainWarga: [
