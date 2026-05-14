@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { FinanceService } from '../finance/finance.service';
 import { GenerateDuesDto } from './dto/generate-dues.dto';
 import { QueryDuesDto } from './dto/query-dues.dto';
 import { PayDuesDto } from './dto/pay-dues.dto';
@@ -9,7 +10,10 @@ import { RequestPayDuesDto } from './dto/request-pay-dues.dto';
 
 @Injectable()
 export class DuesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private financeService: FinanceService,
+  ) {}
 
   async findAll(query: QueryDuesDto) {
     const { page = 1, limit = 50, period, status } = query;
@@ -146,22 +150,51 @@ export class DuesService {
   }
 
   async pay(id: string, dto: PayDuesDto, userId: string) {
-    const billing = await this.prisma.duesBilling.findUnique({
-      where: { id },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const billing = await tx.duesBilling.findUnique({
+        where: { id },
+        include: {
+          household: {
+            include: {
+              members: {
+                where: { familyRelation: 'KEPALA_KELUARGA' },
+                select: { fullName: true },
+                take: 1,
+              },
+            },
+          },
+        },
+      });
 
-    if (!billing) {
-      throw new NotFoundException('Tagihan tidak ditemukan');
-    }
+      if (!billing) {
+        throw new NotFoundException('Tagihan tidak ditemukan');
+      }
 
-    return this.prisma.duesBilling.update({
-      where: { id },
-      data: {
-        status: 'PAID',
-        paidAt: new Date(),
-        paidBy: userId,
-        notes: dto.notes ?? billing.notes,
-      },
+      const kepalaKeluarga =
+        billing.household.members[0]?.fullName ?? billing.household.kkNumber;
+      const description = `Iuran warga - ${kepalaKeluarga} - Periode ${billing.period}`;
+
+      const transaction = await this.financeService.createWithTx(
+        tx,
+        {
+          type: 'IN',
+          category: 'iuran',
+          amount: Number(billing.amount),
+          description,
+        },
+        userId,
+      );
+
+      return tx.duesBilling.update({
+        where: { id },
+        data: {
+          status: 'PAID',
+          paidAt: new Date(),
+          paidBy: userId,
+          notes: dto.notes ?? billing.notes,
+          transactionId: transaction.id,
+        },
+      });
     });
   }
 
@@ -174,12 +207,17 @@ export class DuesService {
       throw new NotFoundException('Tagihan tidak ditemukan');
     }
 
+    if (billing.transactionId) {
+      await this.financeService.remove(billing.transactionId);
+    }
+
     return this.prisma.duesBilling.update({
       where: { id },
       data: {
         status: 'UNPAID',
         paidAt: null,
         paidBy: null,
+        transactionId: null,
       },
     });
   }
@@ -296,22 +334,55 @@ export class DuesService {
   }
 
   async batchPay(dto: BatchPayDuesDto, userId: string) {
-    const result = await this.prisma.duesBilling.updateMany({
-      where: {
-        id: { in: dto.ids },
-        status: 'UNPAID',
-      },
-      data: {
-        status: 'PAID',
-        paidAt: new Date(),
-        paidBy: userId,
-        notes: dto.notes ?? null,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const billings = await tx.duesBilling.findMany({
+        where: { id: { in: dto.ids }, status: 'UNPAID' },
+        include: {
+          household: {
+            include: {
+              members: {
+                where: { familyRelation: 'KEPALA_KELUARGA' },
+                select: { fullName: true },
+                take: 1,
+              },
+            },
+          },
+        },
+      });
+
+      for (const billing of billings) {
+        const kepalaKeluarga =
+          billing.household.members[0]?.fullName ?? billing.household.kkNumber;
+        const description = `Iuran warga - ${kepalaKeluarga} - Periode ${billing.period}`;
+
+        const transaction = await this.financeService.createWithTx(
+          tx,
+          {
+            type: 'IN',
+            category: 'iuran',
+            amount: Number(billing.amount),
+            description,
+          },
+          userId,
+        );
+
+        await tx.duesBilling.update({
+          where: { id: billing.id },
+          data: {
+            status: 'PAID',
+            paidAt: new Date(),
+            paidBy: userId,
+            notes: dto.notes ?? null,
+            transactionId: transaction.id,
+          },
+        });
+      }
+
+      return {
+        updated: billings.length,
+        message: `${billings.length} tagihan berhasil dilunasi`,
+      };
     });
-    return {
-      updated: result.count,
-      message: `${result.count} tagihan berhasil dilunasi`,
-    };
   }
 
   async requestPay(dto: RequestPayDuesDto) {

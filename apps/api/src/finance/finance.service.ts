@@ -74,30 +74,48 @@ export class FinanceService {
 
   async create(dto: CreateTransactionDto, userId: string) {
     return this.prisma.$transaction(async (tx) => {
-      const lastTransaction = await tx.transaction.findFirst({
-        orderBy: { createdAt: 'desc' },
-      });
-
-      const previousBalance = lastTransaction
-        ? Number(lastTransaction.balance)
-        : 0;
-
-      const newBalance =
-        dto.type === 'IN'
-          ? previousBalance + dto.amount
-          : previousBalance - dto.amount;
-
-      return tx.transaction.create({
-        data: {
-          date: dto.date ? new Date(dto.date) : new Date(),
+      return this.createWithTx(
+        tx,
+        {
           type: dto.type,
           category: dto.category,
           amount: dto.amount,
           description: dto.description,
-          balance: newBalance,
-          createdBy: userId,
+          date: dto.date ? new Date(dto.date) : undefined,
         },
-      });
+        userId,
+      );
+    });
+  }
+
+  async createWithTx(
+    tx: Prisma.TransactionClient,
+    dto: { type: string; category: string; amount: number; description: string; date?: Date },
+    userId: string,
+  ) {
+    const lastTransaction = await tx.transaction.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const previousBalance = lastTransaction
+      ? Number(lastTransaction.balance)
+      : 0;
+
+    const newBalance =
+      dto.type === 'IN'
+        ? previousBalance + dto.amount
+        : previousBalance - dto.amount;
+
+    return tx.transaction.create({
+      data: {
+        date: dto.date ?? new Date(),
+        type: dto.type,
+        category: dto.category,
+        amount: dto.amount,
+        description: dto.description,
+        balance: newBalance,
+        createdBy: userId,
+      },
     });
   }
 

@@ -52,6 +52,7 @@ export function usePayDues() {
       duesApi.pay(id, notes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dues'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
     },
   })
 }
@@ -62,6 +63,7 @@ export function useUnpayDues() {
     mutationFn: (id: string) => duesApi.unpay(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dues'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
     },
   })
 }
@@ -80,6 +82,7 @@ export function useBatchPayDues() {
       duesApi.batchPay(ids, notes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dues'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
     },
   })
 }
