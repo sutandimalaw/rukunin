@@ -3,7 +3,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1
 const DEFAULT_TIMEOUT_MS = (() => {
   const raw = process.env.NEXT_PUBLIC_API_TIMEOUT_MS;
   const parsed = raw ? Number(raw) : NaN;
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 10_000;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 15_000;
 })();
 
 function mergeSignals(a: AbortSignal | null | undefined, b: AbortSignal): AbortSignal {
