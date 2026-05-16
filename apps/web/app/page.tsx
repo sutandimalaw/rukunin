@@ -156,79 +156,7 @@ export default function DashboardPage() {
             icon={<Receipt className="h-4 w-4" />}
           />
         </div>
-           {/* ── STATISTIK WARGA ────────────────────────────────────────── */}
-        <div>
-          <h2 className="text-base font-semibold mb-3">Statistik Warga</h2>
-          {loadingResidents ? (
-            <p className="text-sm text-muted-foreground">Memuat statistik warga...</p>
-          ) : residents && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-4 w-4" /> Total Warga
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <span className="text-3xl font-bold">{residents.total}</span>
-                  <p className="text-sm text-muted-foreground">warga terdaftar</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Per Blok</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableBody>
-                      {residents.byBlok.map((r) => (
-                        <TableRow key={r.blok}>
-                          <TableCell>Blok {r.blok}</TableCell>
-                          <TableCell className="text-right font-medium">{r.count} warga</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Status Kepemilikan</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableBody>
-                      {residents.byOwnership.map((r) => (
-                        <TableRow key={r.ownershipStatus}>
-                          <TableCell className="capitalize">{r.ownershipStatus}</TableCell>
-                          <TableCell className="text-right font-medium">{r.count}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Jenis Kelamin</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableBody>
-                      {residents.byGender.map((r) => (
-                        <TableRow key={r.gender}>
-                          <TableCell className="capitalize">{r.gender}</TableCell>
-                          <TableCell className="text-right font-medium">{r.count}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-
+        
         {/* Info Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           {/* Layanan Pending */}
@@ -312,9 +240,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-
-
-     
       </div>
     </SidebarInset>
   )
