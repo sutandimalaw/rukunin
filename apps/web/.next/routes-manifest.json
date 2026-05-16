@@ -1,0 +1,362 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/kartu-keluarga/[id]",
+      "regex": "^/kartu\\-keluarga/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/kartu\\-keluarga/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/penyedia-jasa/[id]",
+      "regex": "^/penyedia\\-jasa/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/penyedia\\-jasa/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/portal/penyedia-jasa/[id]",
+      "regex": "^/portal/penyedia\\-jasa/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/portal/penyedia\\-jasa/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/residents/[id]",
+      "regex": "^/residents/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/residents/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/account",
+      "regex": "^/account(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/account(?:/)?$"
+    },
+    {
+      "page": "/account/profile",
+      "regex": "^/account/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/account/profile(?:/)?$"
+    },
+    {
+      "page": "/announcements",
+      "regex": "^/announcements(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/announcements(?:/)?$"
+    },
+    {
+      "page": "/auth/error",
+      "regex": "^/auth/error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/error(?:/)?$"
+    },
+    {
+      "page": "/auth/forgot-password",
+      "regex": "^/auth/forgot\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/forgot\\-password(?:/)?$"
+    },
+    {
+      "page": "/auth/login",
+      "regex": "^/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/login(?:/)?$"
+    },
+    {
+      "page": "/auth/pending-approval",
+      "regex": "^/auth/pending\\-approval(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/pending\\-approval(?:/)?$"
+    },
+    {
+      "page": "/auth/sign-up",
+      "regex": "^/auth/sign\\-up(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/sign\\-up(?:/)?$"
+    },
+    {
+      "page": "/auth/sign-up-success",
+      "regex": "^/auth/sign\\-up\\-success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/sign\\-up\\-success(?:/)?$"
+    },
+    {
+      "page": "/auth/update-password",
+      "regex": "^/auth/update\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/update\\-password(?:/)?$"
+    },
+    {
+      "page": "/error",
+      "regex": "^/error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/error(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/finance",
+      "regex": "^/finance(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/finance(?:/)?$"
+    },
+    {
+      "page": "/inventaris",
+      "regex": "^/inventaris(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/inventaris(?:/)?$"
+    },
+    {
+      "page": "/iuran-warga",
+      "regex": "^/iuran\\-warga(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/iuran\\-warga(?:/)?$"
+    },
+    {
+      "page": "/kartu-keluarga",
+      "regex": "^/kartu\\-keluarga(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/kartu\\-keluarga(?:/)?$"
+    },
+    {
+      "page": "/keamanan",
+      "regex": "^/keamanan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/keamanan(?:/)?$"
+    },
+    {
+      "page": "/kegiatan-warga",
+      "regex": "^/kegiatan\\-warga(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/kegiatan\\-warga(?:/)?$"
+    },
+    {
+      "page": "/kelola-pengguna",
+      "regex": "^/kelola\\-pengguna(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/kelola\\-pengguna(?:/)?$"
+    },
+    {
+      "page": "/kontak-darurat",
+      "regex": "^/kontak\\-darurat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/kontak\\-darurat(?:/)?$"
+    },
+    {
+      "page": "/landing",
+      "regex": "^/landing(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/landing(?:/)?$"
+    },
+    {
+      "page": "/laporan-warga",
+      "regex": "^/laporan\\-warga(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/laporan\\-warga(?:/)?$"
+    },
+    {
+      "page": "/layanan-warga",
+      "regex": "^/layanan\\-warga(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/layanan\\-warga(?:/)?$"
+    },
+    {
+      "page": "/pengurus",
+      "regex": "^/pengurus(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pengurus(?:/)?$"
+    },
+    {
+      "page": "/penyedia-jasa",
+      "regex": "^/penyedia\\-jasa(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/penyedia\\-jasa(?:/)?$"
+    },
+    {
+      "page": "/polling",
+      "regex": "^/polling(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/polling(?:/)?$"
+    },
+    {
+      "page": "/portal",
+      "regex": "^/portal(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal(?:/)?$"
+    },
+    {
+      "page": "/portal/inventaris",
+      "regex": "^/portal/inventaris(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/inventaris(?:/)?$"
+    },
+    {
+      "page": "/portal/keamanan",
+      "regex": "^/portal/keamanan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/keamanan(?:/)?$"
+    },
+    {
+      "page": "/portal/kegiatan",
+      "regex": "^/portal/kegiatan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/kegiatan(?:/)?$"
+    },
+    {
+      "page": "/portal/kontak-darurat",
+      "regex": "^/portal/kontak\\-darurat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/kontak\\-darurat(?:/)?$"
+    },
+    {
+      "page": "/portal/laporan",
+      "regex": "^/portal/laporan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/laporan(?:/)?$"
+    },
+    {
+      "page": "/portal/layanan",
+      "regex": "^/portal/layanan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/layanan(?:/)?$"
+    },
+    {
+      "page": "/portal/pengumuman",
+      "regex": "^/portal/pengumuman(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/pengumuman(?:/)?$"
+    },
+    {
+      "page": "/portal/pengurus",
+      "regex": "^/portal/pengurus(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/pengurus(?:/)?$"
+    },
+    {
+      "page": "/portal/penyedia-jasa",
+      "regex": "^/portal/penyedia\\-jasa(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/penyedia\\-jasa(?:/)?$"
+    },
+    {
+      "page": "/portal/penyedia-jasa/saya",
+      "regex": "^/portal/penyedia\\-jasa/saya(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/penyedia\\-jasa/saya(?:/)?$"
+    },
+    {
+      "page": "/portal/polling",
+      "regex": "^/portal/polling(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/polling(?:/)?$"
+    },
+    {
+      "page": "/portal/saran-masukan",
+      "regex": "^/portal/saran\\-masukan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/saran\\-masukan(?:/)?$"
+    },
+    {
+      "page": "/portal/umkm",
+      "regex": "^/portal/umkm(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/umkm(?:/)?$"
+    },
+    {
+      "page": "/portal/umkm/kelola",
+      "regex": "^/portal/umkm/kelola(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/portal/umkm/kelola(?:/)?$"
+    },
+    {
+      "page": "/protected",
+      "regex": "^/protected(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/protected(?:/)?$"
+    },
+    {
+      "page": "/residents",
+      "regex": "^/residents(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/residents(?:/)?$"
+    },
+    {
+      "page": "/residents/create",
+      "regex": "^/residents/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/residents/create(?:/)?$"
+    },
+    {
+      "page": "/saran-masukan",
+      "regex": "^/saran\\-masukan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/saran\\-masukan(?:/)?$"
+    },
+    {
+      "page": "/umkm-warga",
+      "regex": "^/umkm\\-warga(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/umkm\\-warga(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
