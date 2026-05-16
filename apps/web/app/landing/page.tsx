@@ -178,7 +178,7 @@ export default function LandingPage() {
               Kelola RT Anda
               <br />
               <span className="bg-linear-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-                 Nyaman, Aman & Transparan
+                 Nyaman Aman & Transparan
               </span>
             </h1>
 

@@ -92,7 +92,7 @@ const data = {
       icon: MessageSquare,
     },
     {
-      title: "Laporan",
+      title: "Laporan Saya",
       url: "/portal/laporan",
       icon: FileTextIcon,
     },

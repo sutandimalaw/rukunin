@@ -4,7 +4,13 @@ import { useState, useCallback } from 'react'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { Plus, FileText, Clock, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from '@/components/ui/breadcrumb'
+import { Plus, FileText, Clock, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, CirclePlus } from 'lucide-react'
 import StatCard from '@/components/shared/StatCard'
 import { LaporanCard } from './components/LaporanCard'
 import { FilterBar, FilterState } from './components/FilterBar'
@@ -48,19 +54,27 @@ export default function LaporanWargaPage() {
 
   return (
     <SidebarInset>
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <h1 className="text-base font-semibold">Laporan Warga</h1>
-        <div className="ml-auto">
-          <Button onClick={() => setOpenCreate(true)} className="gap-1.5">
-            <Plus className="h-4 w-4" />
-            Buat Laporan Baru
-          </Button>
+      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage>Laporan Warga</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </header>
 
-      <div className="p-6 space-y-6">
+      <div className="mx-6 flex justify-end">
+        <Button variant="outline" onClick={() => setOpenCreate(true)}>
+          Buat Laporan Baru <CirclePlus />
+        </Button>
+      </div>
+
+      <div className="m-6 space-y-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard

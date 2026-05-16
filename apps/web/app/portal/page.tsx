@@ -115,7 +115,7 @@ export default function PortalWargaPage() {
           <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
           <div className="flex items-center justify-between flex-1">
             <div>
-              <h1 className="text-lg font-semibold">Portal Warga Rukunin</h1>
+              <h1 className="text-lg font-semibold">Warga RT 4</h1>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
             <div className="flex items-center gap-2">

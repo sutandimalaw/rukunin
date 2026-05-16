@@ -78,20 +78,4 @@ export const columns: ColumnDef<Resident>[] = [
       <div>{row.getValue("occupation") ?? "-"}</div>
     ),
   },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const resident = row.original
-      return (
-        <Link
-          href={`/residents/${resident.id}`}
-          className="inline-flex cursor-pointer"
-          aria-label="Lihat detail"
-        >
-          <ChevronRight />
-        </Link>
-      )
-    },
-  },
 ]
