@@ -20,6 +20,7 @@ import { PollingModule } from './polling/polling.module';
 import { KontakDaruratModule } from './kontak-darurat/kontak-darurat.module';
 import { SaranMasukanModule } from './saran-masukan/saran-masukan.module';
 import { ProfilProfesiModule } from './profil-profesi/profil-profesi.module';
+import { LaporanWargaModule } from './laporan-warga/laporan-warga.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -46,6 +47,7 @@ import { AppService } from './app.service';
     KontakDaruratModule,
     SaranMasukanModule,
     ProfilProfesiModule,
+    LaporanWargaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

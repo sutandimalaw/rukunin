@@ -54,6 +54,8 @@ model User {
   saranMasukanSubmitted   SaranMasukan[]       @relation("SaranSubmitter")
   saranMasukanResponded   SaranMasukan[]       @relation("SaranResponder")
   profilProfesi           ProfilProfesi?
+  laporanDibuat           LaporanWarga[]       @relation("LaporanSubmitter")
+  laporanKomentar         LaporanKomentar[]    @relation("LaporanKomentator")
 
   @@map("users")
 }
@@ -160,6 +162,43 @@ model DuesBilling {
 
   @@unique([householdId, period])
   @@map("dues_billings")
+}
+
+model LaporanWarga {
+  id            String    @id @default(uuid())
+  nomorLaporan  String    @unique @map("nomor_laporan")
+  judul         String
+  kategori      String    // INFRASTRUKTUR | KEBERSIHAN | KEAMANAN | SOSIAL | LAINNYA
+  prioritas     String    @default("NORMAL") // PENTING | NORMAL | RENDAH
+  deskripsi     String
+  lokasi        String?
+  status        String    @default("MENUNGGU") // MENUNGGU | DIPROSES | SELESAI
+  namaPerlapor  String?   @map("nama_perlapor")
+  rtPerlapor    String?   @map("rt_perlapor")
+  fotoUrls      String[]  @map("foto_urls")
+  submittedBy   String?   @map("submitted_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  submitter User?          @relation("LaporanSubmitter", fields: [submittedBy], references: [id])
+  komentar  LaporanKomentar[]
+
+  @@map("laporan_warga")
+}
+
+model LaporanKomentar {
+  id          String   @id @default(uuid())
+  laporanId   String   @map("laporan_id")
+  userId      String   @map("user_id")
+  type        String   // KOMENTAR | STATUS_CHANGE
+  isi         String
+  statusBaru  String?  @map("status_baru")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  laporan LaporanWarga @relation(fields: [laporanId], references: [id], onDelete: Cascade)
+  user    User         @relation("LaporanKomentator", fields: [userId], references: [id])
+
+  @@map("laporan_komentar")
 }
 
 model KegiatanWarga {

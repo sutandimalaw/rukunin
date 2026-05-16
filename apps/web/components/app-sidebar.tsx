@@ -92,6 +92,11 @@ const data = {
       icon: MessageSquare,
     },
     {
+      title: "Laporan",
+      url: "/portal/laporan",
+      icon: FileTextIcon,
+    },
+    {
       title: "Pengurus RT",
       url: "/portal/pengurus",
       icon: Award,
@@ -133,6 +138,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Pengumuman",
       url: "/announcements",
       icon: Bell,
+    },
+    {
+      title: "Laporan Warga",
+      url: "/laporan-warga",
+      icon: FileTextIcon,
     },
     {
       title: "Kegiatan Warga",
